@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
-@Autonomous
+@Autonomous(group = "Test")
 public final class SplineTest extends LinearOpMode {
 
     @Override public void runOpMode() {
