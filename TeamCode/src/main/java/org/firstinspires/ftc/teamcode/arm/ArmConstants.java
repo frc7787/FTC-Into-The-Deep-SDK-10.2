@@ -73,10 +73,18 @@ public final class ArmConstants {
      */
     public static volatile double EXTENSION_KD = 0.0;
     /**
+     * The F value for the extension PID
+     */
+    public static volatile double EXTENSION_KF = 0.0;
+    /**
      * How many inches per "unit" of the optical tracking sensor. I'm not really sure what it is
      * supposed to be so it's called UNITS_PER_INCH instead of something more specific.
      */
     public static volatile double SPARK_FUN_OTOS_UNITS_PER_INCH = 0.0;
+    /**
+     * Linear scalar for the SparkFunOTOS. Cannot be more than 1.1 or less than 0.86.
+     */
+    public static volatile double OPTICAL_ODOMETRY_LINEAR_SCALAR = 1.0;
 
     // ----------------------------------------------------------------------------------------------
     // Rotation
@@ -94,6 +102,10 @@ public final class ArmConstants {
      * The D value for the rotation PID.
      */
     public static volatile double ROTATION_KD = 0.0;
+    /**
+     * The F value for the rotation PID.
+     */
+    public static volatile double ROTATION_KF = 0.0;
     /**
      * How many volts the potentiometer has per degree of rotation.
      */

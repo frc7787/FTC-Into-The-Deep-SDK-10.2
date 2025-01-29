@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
-import org.firstinspires.ftc.teamcode.utility.PIDController;
+import org.firstinspires.ftc.teamcode.utility.PIDFController;
 
 public final class Arm {
     // ---------------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ public final class Arm {
     // Other
     // ---------------------------------------------------------------------------------------------
 
-    PIDController extensionController, rotationController;
+    PIDFController extensionController, rotationController;
 
     public Arm(@NonNull HardwareMap hardwareMap) {
         rotationMotor = hardwareMap.get(DcMotor.class, "rotationMotor");
@@ -72,13 +72,13 @@ public final class Arm {
         manualExtensionInput = 0.0;
         manualRotationInput = 0.0;
 
-        rotationController = new PIDController(ROTATION_KP, ROTATION_KI, ROTATION_KD);
-        extensionController = new PIDController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI);
+        rotationController = new PIDFController(ROTATION_KP, ROTATION_KI, ROTATION_KD, ROTATION_KF);
+        extensionController = new PIDFController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI, EXTENSION_KF);
     }
 
     private void configureOpticalTracker() {
-        opticalExtensionTracker.setLinearScalar(1.0);
-        opticalExtensionTracker.calibrateImu(255, true);
+        opticalExtensionTracker.setLinearScalar(OPTICAL_ODOMETRY_LINEAR_SCALAR);
+        opticalExtensionTracker.calibrateImu(1, true);
 
         SparkFunOTOS.SignalProcessConfig signalProcessConfig = new SparkFunOTOS.SignalProcessConfig();
         signalProcessConfig.enAcc = false;

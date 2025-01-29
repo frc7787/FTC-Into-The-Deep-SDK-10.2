@@ -7,20 +7,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.arm.ArmConstants;
-import org.firstinspires.ftc.teamcode.utility.PIDController;
+import org.firstinspires.ftc.teamcode.utility.PIDFController;
 
 @TeleOp(group = "Test")
 @Config
 public final class OpticalExtensionTrackingTest extends OpMode {
     private SparkFunOTOS opticalOdometry;
     private DcMotor leaderExtensionMotor, followerExtensionMotor;
-
-    public static volatile double TARGET_POSITION = 30.0;
-    public static volatile double P = 0.0;
-    public static volatile double I = 0.0;
-    public static volatile double D = 0.0;
-
-    public static volatile PIDController extensionController = new PIDController(P, I, D);
 
     @Override public void init() {
         initializeOpticalOdometry();
@@ -31,17 +24,7 @@ public final class OpticalExtensionTrackingTest extends OpMode {
     }
 
     @Override public void loop() {
-        extensionController.setCoefficients(P, I, D);
-        double position = -opticalOdometry.getPosition().y;
-
-        double power = extensionController.calculate(position, TARGET_POSITION);
-        leaderExtensionMotor.setPower(power);
-        followerExtensionMotor.setPower(power);
-
-        telemetry.addData("Position", position);
-        telemetry.addData("Target", TARGET_POSITION);
-        telemetry.addData("Error", Math.abs(position - TARGET_POSITION));
-        telemetry.addData("Power", power);
+        telemetry.addData("Y Position", -opticalOdometry.getPosition().y);
     }
 
     private void initializeOpticalOdometry() {

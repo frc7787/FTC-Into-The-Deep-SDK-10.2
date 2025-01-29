@@ -2,17 +2,18 @@ package org.firstinspires.ftc.teamcode.utility;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public final class PIDController {
-    private double Kp, Ki, Kd;
+public final class PIDFController {
+    private double Kp, Ki, Kd, Kf;
     private final ElapsedTime timer;
 
     private double lastError, integralSum;
     private boolean isFirstIteration;
 
-    public PIDController(double Kp, double Ki, double Kd) {
+    public PIDFController(double Kp, double Ki, double Kd, double Kf) {
         this.Kp = Kp;
         this.Ki = Ki;
         this.Kd = Kd;
+        this.Kf = Kf;
         timer = new ElapsedTime();
         reset();
     }
@@ -22,7 +23,7 @@ public final class PIDController {
         double output;
 
         if (isFirstIteration) {
-            output = Kp * error;
+            output = Kp * error + Kf * targetPosition;
             lastError = error;
             timer.reset();
             isFirstIteration = false;
@@ -34,7 +35,7 @@ public final class PIDController {
             // Sum of all error over time
             integralSum = integralSum + error * deltaTime;
 
-            output = Kp * error + Ki * integralSum + Kd * derivative;
+            output = Kp * error + Ki * integralSum + Kd * derivative + Kf * targetPosition;
             lastError = error;
 
             // Reset the timer for the next time
@@ -44,10 +45,11 @@ public final class PIDController {
         return output;
     }
 
-    public void setCoefficients(double P, double I, double D) {
+    public void setCoefficients(double P, double I, double D, double F) {
         this.Kp = P;
         this.Ki = I;
         this.Kd = D;
+        this.Kf = F;
     }
 
     public void reset() {

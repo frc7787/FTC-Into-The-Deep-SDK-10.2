@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.arm.ArmConstants.INTAKE_CLOSED_POSI
 import static org.firstinspires.ftc.teamcode.arm.ArmConstants.INTAKE_OPEN_POSITION;
 
 import com.qualcomm.hardware.rev.RevTouchSensor;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,8 +21,11 @@ public final class ArmHardwareTest extends OpMode {
     private RevTouchSensor extensionLimitSwitch,
                            frontRotationLimitSwitch,
                            backRotationLimitSwitch;
+    private SparkFunOTOS opticalOdometry;
 
     private Servo intakeServo;
+
+    private double extensionOffset;
 
     @Override public void init() {
         rotationMotor = hardwareMap.get(DcMotor.class, ArmConstants.ROTATION_MOTOR_NAME);
@@ -43,6 +47,22 @@ public final class ArmHardwareTest extends OpMode {
                 = hardwareMap.get(RevTouchSensor.class, ArmConstants.BACK_ROTATION_LIMIT_SWITCH_NAME);
         intakeServo = hardwareMap.get(Servo.class, ArmConstants.INTAKE_SERVO_NAME);
         intakeServo.setPosition(INTAKE_CLOSED_POSITION);
+
+        opticalOdometry = hardwareMap.get(SparkFunOTOS.class, ArmConstants.OPTICAL_ODOMETRY_NAME);
+        configureOpticalOdometry();
+
+        extensionOffset = 0.0;
+    }
+
+    private void configureOpticalOdometry() {
+        opticalOdometry.setLinearScalar(1.0);
+        opticalOdometry.calibrateImu(255, true);
+
+        SparkFunOTOS.SignalProcessConfig signalProcessConfig = new SparkFunOTOS.SignalProcessConfig();
+        signalProcessConfig.enAcc = false;
+        signalProcessConfig.enRot = false;
+        opticalOdometry.setSignalProcessConfig(signalProcessConfig);
+        opticalOdometry.setPosition(new SparkFunOTOS.Pose2D(0.0, 0.0, 0.0));
     }
 
     @Override public void loop() {
@@ -65,5 +85,6 @@ public final class ArmHardwareTest extends OpMode {
         telemetry.addData("Front Rotation Limit Switch Pressed", frontRotationLimitSwitch.isPressed());
         telemetry.addData("Back Rotation Limit Switch Pressed", backRotationLimitSwitch.isPressed());
         telemetry.addData("Extension Limit Switch Pressed", extensionLimitSwitch.isPressed());
+        telemetry.addData("Extension", -opticalOdometry.getPosition().y);
     }
 }
