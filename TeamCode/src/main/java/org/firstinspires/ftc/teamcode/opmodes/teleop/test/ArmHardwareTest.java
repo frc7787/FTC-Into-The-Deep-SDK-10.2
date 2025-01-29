@@ -1,15 +1,19 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 
+import static org.firstinspires.ftc.teamcode.arm.ArmConstants.INTAKE_CLOSED_POSITION;
+import static org.firstinspires.ftc.teamcode.arm.ArmConstants.INTAKE_OPEN_POSITION;
+
 import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.arm.ArmConstants;
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
 
-@TeleOp
-public class ArmHardwareTest extends OpMode {
+@TeleOp(group = "Test")
+public final class ArmHardwareTest extends OpMode {
     private DcMotor rotationMotor,
                     leaderExtensionMotor,
                     followerExtensionMotor;
@@ -19,13 +23,10 @@ public class ArmHardwareTest extends OpMode {
 
     private Servo intakeServo;
 
-    private double INTAKE_CLOSED_POSITION = 0.12;
-    private double INTAKE_OPEN_POSITION = 0.0;
-
     @Override public void init() {
-        rotationMotor = hardwareMap.get(DcMotor.class, "rotationMotor");
-        leaderExtensionMotor = hardwareMap.get(DcMotor.class, "leaderExtensionMotor");
-        followerExtensionMotor = hardwareMap.get(DcMotor.class, "followerExtensionMotor");
+        rotationMotor = hardwareMap.get(DcMotor.class, ArmConstants.ROTATION_MOTOR_NAME);
+        leaderExtensionMotor = hardwareMap.get(DcMotor.class, ArmConstants.LEADER_EXTENSION_MOTOR_NAME);
+        followerExtensionMotor = hardwareMap.get(DcMotor.class, ArmConstants.FOLLOWER_EXTENSION_MOTOR_NAME);
 
         MotorUtility.setZeroPowerBehaviours(
                 DcMotor.ZeroPowerBehavior.BRAKE,
@@ -34,10 +35,13 @@ public class ArmHardwareTest extends OpMode {
                 followerExtensionMotor
         );
 
-        extensionLimitSwitch = hardwareMap.get(RevTouchSensor.class, "extensionLimitSwitch");
-        frontRotationLimitSwitch = hardwareMap.get(RevTouchSensor.class, "frontRotationLimitSwitch");
-        backRotationLimitSwitch = hardwareMap.get(RevTouchSensor.class, "backRotationLimitSwitch");
-        intakeServo = hardwareMap.get(Servo.class, "intakeServo");
+        extensionLimitSwitch
+                = hardwareMap.get(RevTouchSensor.class, ArmConstants.EXTENSION_LIMIT_SWITCH_NAME);
+        frontRotationLimitSwitch
+                = hardwareMap.get(RevTouchSensor.class, ArmConstants.FRONT_ROTATION_LIMIT_SWITCH_NAME);
+        backRotationLimitSwitch
+                = hardwareMap.get(RevTouchSensor.class, ArmConstants.BACK_ROTATION_LIMIT_SWITCH_NAME);
+        intakeServo = hardwareMap.get(Servo.class, ArmConstants.INTAKE_SERVO_NAME);
         intakeServo.setPosition(INTAKE_CLOSED_POSITION);
     }
 

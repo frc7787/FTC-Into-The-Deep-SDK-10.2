@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
-@TeleOp
-public class LocalizationTest extends LinearOpMode {
+@TeleOp(group = "Test")
+public final class LocalizationTest extends LinearOpMode {
 
     @Override public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());

@@ -20,6 +20,15 @@ public final class ArmDebug {
         telemetry.addData("Front Rotation Limit Switch", arm.frontRotationLimitSwitch.isPressed());
         telemetry.addData("Back Rotation Limit Switch", arm.backRotationLimitSwitch.isPressed());
         telemetry.addData("Extension Limit Switch", arm.extensionLimitSwitch.isPressed());
+        telemetry.addData("Rotation Power", arm.rotationMotor.getPower());
+        telemetry.addData("Leader Extension Power", arm.leaderExtensionMotor.getPower());
+        telemetry.addData("Follower Extension Power", arm.followerExtensionMotor.getPower());
+    }
+
+    public void debugPosition() {
+        telemetry.addLine("----- Debug Position -----");
+        telemetry.addData("Rotation Position", arm.rotationPosition);
+        telemetry.addData("Extension Inches", -arm.opticalExtensionTracker.getPosition().y);
     }
 
 }

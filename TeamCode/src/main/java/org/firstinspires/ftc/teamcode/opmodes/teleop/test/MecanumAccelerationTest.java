@@ -10,7 +10,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@TeleOp
+@TeleOp(group = "Test")
 public final class MecanumAccelerationTest extends OpMode {
     private MecanumDrive driveBase;
     private ElapsedTime elapsedTime;

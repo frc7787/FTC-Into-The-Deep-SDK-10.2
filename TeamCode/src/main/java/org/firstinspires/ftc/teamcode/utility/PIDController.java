@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.utility;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public final class PIDController {
-    private final double Kp, Ki, Kd;
+    private double Kp, Ki, Kd;
     private final ElapsedTime timer;
 
     private double lastError, integralSum;
@@ -42,6 +42,12 @@ public final class PIDController {
         }
 
         return output;
+    }
+
+    public void setCoefficients(double P, double I, double D) {
+        this.Kp = P;
+        this.Ki = I;
+        this.Kd = D;
     }
 
     public void reset() {
