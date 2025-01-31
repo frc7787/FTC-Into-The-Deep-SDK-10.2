@@ -1,17 +1,18 @@
 package org.firstinspires.ftc.teamcode.arm;
 
 import static org.firstinspires.ftc.teamcode.arm.ArmConstants.*;
-import static org.firstinspires.ftc.teamcode.arm.ArmConversions.opticalTrackerReadingToInches;
 
 import androidx.annotation.NonNull;
 
 import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
-import org.firstinspires.ftc.teamcode.utility.PIDFController;
+import org.firstinspires.ftc.teamcode.utility.PIDController;
 
 public final class Arm {
     // ---------------------------------------------------------------------------------------------
@@ -37,13 +38,18 @@ public final class Arm {
 
     double manualExtensionInput, manualRotationInput;
     int rotationPosition, rotationTargetPosition;
+    double rotationDegrees, rotationTargetDegrees;
+
     double extensionInches, extensionTargetInches;
+
+    boolean atPosition;
+    boolean debug;
 
     // ---------------------------------------------------------------------------------------------
     // Other
     // ---------------------------------------------------------------------------------------------
 
-    PIDFController extensionController, rotationController;
+    PIDController extensionController, rotationController;
 
     public Arm(@NonNull HardwareMap hardwareMap) {
         rotationMotor = hardwareMap.get(DcMotor.class, "rotationMotor");
@@ -63,6 +69,8 @@ public final class Arm {
         homingState = HomingState.START;
         rotationAlreadyHomed = false;
         extensionAlreadyHomed = false;
+        atPosition = false;
+        debug = false;
 
         rotationPosition = 0;
         rotationTargetPosition = 0;
@@ -72,9 +80,12 @@ public final class Arm {
         manualExtensionInput = 0.0;
         manualRotationInput = 0.0;
 
-        rotationController = new PIDFController(ROTATION_KP, ROTATION_KI, ROTATION_KD, ROTATION_KF);
-        extensionController = new PIDFController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI, EXTENSION_KF);
+        rotationController = new PIDController(ROTATION_KP, ROTATION_KI, ROTATION_KD);
+        rotationController.setTolerance(ROTATION_TOLERANCE_DEGREES);
+        extensionController = new PIDController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI);
     }
+
+    public void setDebug() { debug = true; }
 
     private void configureOpticalTracker() {
         opticalExtensionTracker.setLinearScalar(OPTICAL_ODOMETRY_LINEAR_SCALAR);
@@ -91,7 +102,7 @@ public final class Arm {
      * Updates the state of the arm.
      */
     public void update() {
-        extensionInches = opticalTrackerReadingToInches(-opticalExtensionTracker.getPosition().y);
+        updatePositionInformation();
 
         double rotationPower = 0.0;
         double extensionPower = 0.0;
@@ -105,6 +116,7 @@ public final class Arm {
                 home();
                 return;
             case POSITION:
+                rotationPower = rotationController.calculate(rotationDegrees, rotationTargetDegrees);
                 break;
         }
 
@@ -115,6 +127,12 @@ public final class Arm {
         rotationMotor.setPower(rotationPower);
         leaderExtensionMotor.setPower(extensionPower);
         followerExtensionMotor.setPower(extensionPower);
+    }
+
+    private void updatePositionInformation() {
+        extensionInches = -opticalExtensionTracker.getPosition().y;
+        rotationPosition = rotationMotor.getCurrentPosition();
+        rotationDegrees = (double) rotationPosition / ROTATION_TICKS_PER_DEGREE;
     }
 
     /**
@@ -206,6 +224,15 @@ public final class Arm {
         if (state != State.PRE_HOMING) return;
         this.manualRotationInput = rotationInput;
         this.manualExtensionInput = extensionInput;
+    }
+
+    /**
+     * Sets the target degrees of the rotation motor
+     * @param degrees The target degrees.
+     */
+    public void setTargetDegrees(double degrees) {
+        rotationTargetDegrees = Range.clip(
+                degrees, MINIMUM_ROTATION_ANGLE_DEGREES, MAXIMUM_ROTATION_ANGLE_DEGREES);
     }
 
     /**

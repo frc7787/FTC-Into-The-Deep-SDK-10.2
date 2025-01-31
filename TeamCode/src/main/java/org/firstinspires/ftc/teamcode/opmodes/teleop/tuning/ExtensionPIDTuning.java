@@ -8,13 +8,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.utility.PIDFController;
+import org.firstinspires.ftc.teamcode.utility.PIDController;
 
 @TeleOp(group = "Tuning")
 @Config
-public final class OpticalOdometryTuning extends OpMode {
+public final class ExtensionPIDTuning extends OpMode {
     private SparkFunOTOS opticalOdometry;
     private DcMotorImplEx leaderExtensionMotor, followerExtensionMotor;
     private FtcDashboard ftcDashboard;
@@ -23,13 +22,10 @@ public final class OpticalOdometryTuning extends OpMode {
     public static double KP = 0.0;
     public static double KI = 0.0;
     public static double KD = 0.0;
-    public static double KF = 0.0;
 
     private double currentPosition;
 
-    private PIDFController extensionController;
-
-    private ElapsedTime elapsedTime;
+    private PIDController extensionController;
 
     @Override public void init() {
         opticalOdometry = hardwareMap.get(SparkFunOTOS.class, "opticalOdometry");
@@ -38,14 +34,9 @@ public final class OpticalOdometryTuning extends OpMode {
         followerExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "followerExtensionMotor");
         leaderExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         followerExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        extensionController = new PIDFController(KP, KI, KD, KF);
+        extensionController = new PIDController(KP, KI, KD);
         currentPosition = 0.0;
         ftcDashboard = FtcDashboard.getInstance();
-        elapsedTime = new ElapsedTime();
-    }
-
-    @Override public void start() {
-        elapsedTime.reset();
     }
 
     private void configureOpticalOdometry() {
@@ -60,7 +51,7 @@ public final class OpticalOdometryTuning extends OpMode {
     }
 
     @Override public void loop() {
-        extensionController.setCoefficients(KP, KI, KD, KF);
+        extensionController.debugSetCoefficients(KP, KI, KD);
         currentPosition = -opticalOdometry.getPosition().y;
         double power = extensionController.calculate(currentPosition, TARGET_POSITION);
 
@@ -68,11 +59,9 @@ public final class OpticalOdometryTuning extends OpMode {
         telemetryPacket.put("Current Position", currentPosition);
         telemetryPacket.put("Target Position", TARGET_POSITION);
         telemetryPacket.put("Error", Math.abs(currentPosition - TARGET_POSITION));
-        telemetryPacket.put("Power * 10", power * 10);
+        telemetryPacket.put("Power", power);
 
         ftcDashboard.sendTelemetryPacket(telemetryPacket);
-
-        if (elapsedTime.seconds() < 5) return;
 
         leaderExtensionMotor.setPower(power);
         followerExtensionMotor.setPower(power);

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -17,7 +18,7 @@ public final class Main extends OpMode {
 
     @Override public void init() {
         arm = new Arm(hardwareMap);
-        armDebug = new ArmDebug(arm, telemetry);
+        armDebug = new ArmDebug(arm, FtcDashboard.getInstance());
         mecanumDrive = new MecanumDrive(hardwareMap, new Pose2d(0.0, 0.0, 0.0));
         state = TeleOpState.PRE_HOMING;
     }
@@ -29,7 +30,6 @@ public final class Main extends OpMode {
         strafe *= Math.abs(strafe);
         double turn = gamepad1.right_stick_x;
         turn *= Math.abs(turn);
-
 
         switch (state) {
             case PRE_HOMING:

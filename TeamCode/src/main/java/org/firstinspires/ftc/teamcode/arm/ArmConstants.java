@@ -61,21 +61,18 @@ public final class ArmConstants {
     // ----------------------------------------------------------------------------------------------
 
     /**
-     * The P value for the extension PID
+     * The proportional value for the extension PID
      */
     public static volatile double EXTENSION_KP = 0.0;
     /**
-     * The I value for the extension PID
+     * The integral value for the extension PID. This is should always be here and is merely present for
+     * completeness.
      */
     public static volatile double EXTENSION_KI = 0.0;
     /**
-     * The D value for the extension PID
+     * The derivative value for the extension PID
      */
     public static volatile double EXTENSION_KD = 0.0;
-    /**
-     * The F value for the extension PID
-     */
-    public static volatile double EXTENSION_KF = 0.0;
     /**
      * How many inches per "unit" of the optical tracking sensor. I'm not really sure what it is
      * supposed to be so it's called UNITS_PER_INCH instead of something more specific.
@@ -91,23 +88,32 @@ public final class ArmConstants {
     // ----------------------------------------------------------------------------------------------
 
     /**
-     * The P value for the rotation PID.
+     * The proportional value for the rotation PID.
      */
-    public static volatile double ROTATION_KP = 0.0;
+    public static volatile double ROTATION_KP = 0.8;
     /**
-     * The I value for the rotation PID.
+     * The integral value for the rotation PID. This should always be 0.0 and is merely present for
+     * completeness.
      */
     public static volatile double ROTATION_KI = 0.0;
     /**
-     * The D value for the rotation PID.
+     * The derivative value for the rotation PID.
      */
-    public static volatile double ROTATION_KD = 0.0;
+    public static volatile double ROTATION_KD = 0.013;
     /**
-     * The F value for the rotation PID.
+     * How many ticks per degree of rotation of the arm.
      */
-    public static volatile double ROTATION_KF = 0.0;
+    public static volatile double ROTATION_TICKS_PER_DEGREE = 29.0;
     /**
-     * How many volts the potentiometer has per degree of rotation.
+     * How many degrees away from target is considered at position
      */
-    public static volatile double ROTATION_VOLTS_PER_DEGREE = 0.0;
+    public static volatile double ROTATION_TOLERANCE_DEGREES = 0.5;
+    /**
+     * The minimum degrees the arm can rotate
+     */
+    public static volatile double MINIMUM_ROTATION_ANGLE_DEGREES = 0.0;
+    /**
+     * The maximum degrees the arm can rotation
+     */
+    public static volatile double MAXIMUM_ROTATION_ANGLE_DEGREES = 90.0;
 }

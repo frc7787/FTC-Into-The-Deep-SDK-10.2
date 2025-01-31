@@ -2,18 +2,19 @@ package org.firstinspires.ftc.teamcode.utility;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public final class PIDFController {
-    private double Kp, Ki, Kd, Kf;
+public final class PIDController {
+    private double Kp, Ki, Kd;
+    private double tolerance;
     private final ElapsedTime timer;
 
     private double lastError, integralSum;
     private boolean isFirstIteration;
 
-    public PIDFController(double Kp, double Ki, double Kd, double Kf) {
+    public PIDController(double Kp, double Ki, double Kd) {
         this.Kp = Kp;
         this.Ki = Ki;
         this.Kd = Kd;
-        this.Kf = Kf;
+        this.tolerance = 0.0;
         timer = new ElapsedTime();
         reset();
     }
@@ -23,7 +24,7 @@ public final class PIDFController {
         double output;
 
         if (isFirstIteration) {
-            output = Kp * error + Kf * targetPosition;
+            output = Kp * error;
             lastError = error;
             timer.reset();
             isFirstIteration = false;
@@ -35,21 +36,26 @@ public final class PIDFController {
             // Sum of all error over time
             integralSum = integralSum + error * deltaTime;
 
-            output = Kp * error + Ki * integralSum + Kd * derivative + Kf * targetPosition;
+            output = Kp * error + Ki * integralSum + Kd * derivative;
             lastError = error;
 
             // Reset the timer for the next time
             timer.reset();
         }
 
+        if (Math.abs(error) < tolerance) output = 0.0;
+
         return output;
     }
 
-    public void setCoefficients(double P, double I, double D, double F) {
+    public void setTolerance(double tolerance) {
+        this.tolerance = Math.max(0, tolerance);
+    }
+
+    public void debugSetCoefficients(double P, double I, double D) {
         this.Kp = P;
         this.Ki = I;
         this.Kd = D;
-        this.Kf = F;
     }
 
     public void reset() {

@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.arm.ArmConstants;
-import org.firstinspires.ftc.teamcode.utility.PIDFController;
 
 @TeleOp(group = "Test")
 @Config
