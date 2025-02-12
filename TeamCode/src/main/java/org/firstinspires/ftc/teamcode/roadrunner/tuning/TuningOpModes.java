@@ -25,6 +25,7 @@ import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 
+import static org.firstinspires.ftc.teamcode.roadrunner.RoadrunnerConstants.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,10 +62,10 @@ public final class TuningOpModes {
 
             return new DriveView(
                     DriveType.MECANUM,
-                    MecanumDrive.PARAMS.inPerTick,
-                    MecanumDrive.PARAMS.maxWheelVel,
-                    MecanumDrive.PARAMS.minProfileAccel,
-                    MecanumDrive.PARAMS.maxProfileAccel,
+                    DEAD_WHEEL_INCHES_PER_TICK,
+                    MAX_WHEEL_VELOCITY_INCHES_PER_SECOND,
+                    MAX_DECELERATION_INCHES_PER_SECOND_SQUARED,
+                    MAX_ACCELERATION_INCHES_PER_SECOND_SQUARED,
                     hardwareMap.getAll(LynxModule.class),
                     Arrays.asList(
                             md.leftFront,
@@ -80,9 +81,7 @@ public final class TuningOpModes {
                     perpEncs,
                     md.lazyImu,
                     md.voltageSensor,
-                    () -> new MotorFeedforward(MecanumDrive.PARAMS.kS,
-                            MecanumDrive.PARAMS.kV / MecanumDrive.PARAMS.inPerTick,
-                            MecanumDrive.PARAMS.kA / MecanumDrive.PARAMS.inPerTick)
+                    () -> new MotorFeedforward(KS, KV / DEAD_WHEEL_INCHES_PER_TICK, KA / DEAD_WHEEL_INCHES_PER_TICK)
             );
         };
 

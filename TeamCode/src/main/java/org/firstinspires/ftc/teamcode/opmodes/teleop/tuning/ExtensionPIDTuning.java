@@ -18,7 +18,7 @@ public final class ExtensionPIDTuning extends OpMode {
     private DcMotorImplEx leaderExtensionMotor, followerExtensionMotor;
     private FtcDashboard ftcDashboard;
 
-    public static double TARGET_POSITION = 16.0;
+    public static double TARGET_POSITION = 0.0;
     public static double KP = 0.0;
     public static double KI = 0.0;
     public static double KD = 0.0;

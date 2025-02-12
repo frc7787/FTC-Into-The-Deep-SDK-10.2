@@ -16,6 +16,7 @@ public final class ServoTest extends OpMode {
 
     @Override public void init() {
         testServo = hardwareMap.get(ServoImplEx.class, "intakeServo");
+        testServo.setDirection(REVERSE);
         previousGamepad = new Gamepad();
         currentGamepad  = new Gamepad();
     }

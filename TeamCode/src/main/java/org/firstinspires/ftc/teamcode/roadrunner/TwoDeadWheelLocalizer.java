@@ -24,39 +24,27 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.TwoDeadWheelInputsMessage;
+import static org.firstinspires.ftc.teamcode.roadrunner.RoadrunnerConstants.*;
 
 @Config
 public final class TwoDeadWheelLocalizer implements Localizer {
-    public static class Params {
-        public double parYTicks = 0.0; // y position of the parallel encoder (in tick units)
-        public double perpXTicks = 0.0; // x position of the perpendicular encoder (in tick units)
-    }
-
-    public static Params PARAMS = new Params();
-
     public final Encoder par, perp;
     public final IMU imu;
 
     private int lastParPos, lastPerpPos;
     private Rotation2d lastHeading;
 
-    private final double inPerTick;
-
     private double lastRawHeadingVel, headingVelOffset;
     private boolean initialized;
     private Pose2d pose;
 
-    public TwoDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick, Pose2d pose) {
-        par = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "frontLeftDriveMotor")));
+    public TwoDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, Pose2d pose) {
+        par = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "frontRightDriveMotor")));
         perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "backRightDriveMotor")));
 
-        par.setDirection(DcMotorSimple.Direction.REVERSE);
+        perp.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.imu = imu;
-
-        this.inPerTick = inPerTick;
-
-        FlightRecorder.write("TWO_DEAD_WHEEL_PARAMS", PARAMS);
 
         this.pose = pose;
     }
@@ -116,13 +104,13 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         Twist2dDual<Time> twist = new Twist2dDual<>(
                 new Vector2dDual<>(
                         new DualNum<Time>(new double[] {
-                                parPosDelta - PARAMS.parYTicks * headingDelta,
-                                parPosVel.velocity - PARAMS.parYTicks * headingVel,
-                        }).times(inPerTick),
+                                parPosDelta - PARALLEL_DEAD_WHEEL_Y_OFFSET_TICKS * headingDelta,
+                                parPosVel.velocity - PARALLEL_DEAD_WHEEL_Y_OFFSET_TICKS * headingVel,
+                        }).times(DEAD_WHEEL_INCHES_PER_TICK),
                         new DualNum<Time>(new double[] {
-                                perpPosDelta - PARAMS.perpXTicks * headingDelta,
-                                perpPosVel.velocity - PARAMS.perpXTicks * headingVel,
-                        }).times(inPerTick)
+                                perpPosDelta - PERPENDICULAR_DEAD_WHEEL_X_OFFSET_TICKS * headingDelta,
+                                perpPosVel.velocity - PERPENDICULAR_DEAD_WHEEL_X_OFFSET_TICKS * headingVel,
+                        }).times(DEAD_WHEEL_INCHES_PER_TICK)
                 ),
                 new DualNum<>(new double[] {
                         headingDelta,

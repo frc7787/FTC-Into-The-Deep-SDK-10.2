@@ -2,20 +2,18 @@ package org.firstinspires.ftc.teamcode.arm;
 
 import com.acmerobotics.dashboard.config.Config;
 
-/**
- * All variables should be public static volatile to ensure they can be accessed properly by
- * FTC Dashboard.
- */
 @Config
 public final class ArmConstants {
+    // All variables to be modified by FTCDashboard should be marked public static volatile
+
     // ---------------------------------------------------------------------------------------------
     // Names
     // ---------------------------------------------------------------------------------------------
 
     public static final String INTAKE_SERVO_NAME = "intakeServo";
     public static final String ROTATION_MOTOR_NAME = "rotationMotor";
-    public static final String LEADER_EXTENSION_MOTOR_NAME = "leaderExtensionMotor";
-    public static final String FOLLOWER_EXTENSION_MOTOR_NAME = "followerExtensionMotor";
+    public static final String EXTENSION_MOTOR_ONE_NAME = "extensionMotorOne";
+    public static final String EXTENSION_MOTOR_TWO_NAME = "extensionMotorTwo";
     public static final String OPTICAL_ODOMETRY_NAME = "opticalOdometry";
     public static final String FRONT_ROTATION_LIMIT_SWITCH_NAME = "frontRotationLimitSwitch";
     public static final String BACK_ROTATION_LIMIT_SWITCH_NAME = "backRotationLimitSwitch";
@@ -47,14 +45,29 @@ public final class ArmConstants {
     // Intake
     // ---------------------------------------------------------------------------------------------
 
+    // Intake positions should be to 2 decimal places, any more will be truncated internally by the
+    // SDK
+
     /**
      * The position of the intake servo when fully opened.
      */
-    public static volatile double INTAKE_OPEN_POSITION = 0.0;
+    public static volatile double INTAKE_OPEN_POSITION = 0.20;
     /**
      * The position of the intake servo when fully closed
      */
-    public static volatile double INTAKE_CLOSED_POSITION = 0.14;
+    public static volatile double INTAKE_CLOSED_POSITION = 0.01;
+
+    // The minimum and maximum positions represent the minimum and maximum position of the intake
+    // servo before it stalls, or the intake becomes otherwise damaged
+
+    /**
+     * The minimum position of the intake
+     */
+    public static volatile double MIN_INTAKE_POSITION = 0.0;
+    /**
+     * The maximum position of the intake
+     */
+    public static volatile double MAX_INTAKE_POSITION = 0.35;
 
     // ----------------------------------------------------------------------------------------------
     // Extension
@@ -63,7 +76,7 @@ public final class ArmConstants {
     /**
      * The proportional value for the extension PID
      */
-    public static volatile double EXTENSION_KP = 0.0;
+    public static volatile double EXTENSION_KP = 0.75;
     /**
      * The integral value for the extension PID. This is should always be here and is merely present for
      * completeness.
@@ -72,16 +85,19 @@ public final class ArmConstants {
     /**
      * The derivative value for the extension PID
      */
-    public static volatile double EXTENSION_KD = 0.0;
-    /**
-     * How many inches per "unit" of the optical tracking sensor. I'm not really sure what it is
-     * supposed to be so it's called UNITS_PER_INCH instead of something more specific.
-     */
-    public static volatile double SPARK_FUN_OTOS_UNITS_PER_INCH = 0.0;
+    public static volatile double EXTENSION_KD = 0.013;
     /**
      * Linear scalar for the SparkFunOTOS. Cannot be more than 1.1 or less than 0.86.
      */
     public static volatile double OPTICAL_ODOMETRY_LINEAR_SCALAR = 1.0;
+    /**
+     * The minimum extension distance between the center of rotation and the end of the arm.
+     */
+    public static volatile double MIN_EXT_INCHES = 11.0;
+    /**
+     * The maximum extension distance between the center of rotation and the end of the arm.
+     */
+    public static volatile double MAX_EXT_INCHES = 50.0;
 
     // ----------------------------------------------------------------------------------------------
     // Rotation
@@ -101,19 +117,96 @@ public final class ArmConstants {
      */
     public static volatile double ROTATION_KD = 0.013;
     /**
-     * How many ticks per degree of rotation of the arm.
+     * How many volts the potentiometer returns per degree.
      */
-    public static volatile double ROTATION_TICKS_PER_DEGREE = 29.0;
+    public static volatile double POTENTIOMETER_VOLTS_PER_DEGREE = 0.009122222222;
     /**
      * How many degrees away from target is considered at position
      */
     public static volatile double ROTATION_TOLERANCE_DEGREES = 0.5;
     /**
-     * The minimum degrees the arm can rotate
+     * The minimum angle the arm can rotate to, in degrees.
      */
-    public static volatile double MINIMUM_ROTATION_ANGLE_DEGREES = 0.0;
+    public static volatile double MIN_ROT_DEG = 0.0;
     /**
-     * The maximum degrees the arm can rotation
+     * The maximum angle the arm can rotate to, in degrees.
      */
-    public static volatile double MAXIMUM_ROTATION_ANGLE_DEGREES = 90.0;
+    public static volatile double MAX_ROT_DEG = 90.0;
+    /**
+     * The starting angle of the arm, in degrees.
+     */
+    public static volatile double ROTATION_STARTING_ANGLE = -16.0;
+
+    // ---------------------------------------------------------------------------------------------
+    // Arm
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * The distance between the center of rotation and the front of the robot.
+     */
+    public static volatile double ROTATION_HORIZONTAL_OFFSET_INCHES = 9.0;
+    /**
+     * The distance between the center of rotation and the ground
+     */
+    public static volatile double ROTATION_VERTICAL_OFFSET_INCHES = -4.75;
+
+    /**
+     * The maximum horizontal extension of the robot relative to the front of the robot.
+     */
+    public static volatile double MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC = 32.0;
+
+    // ---------------------------------------------------------------------------------------------
+    //
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * The horizontal extension inches to get to the neutral position relative to the front of the
+     * robot.
+     */
+    public static volatile double NEUTRAL_HORIZONTAL_INCHES = -0.5;
+    /**
+     * The vertical inches to get to the neutral position relative to the ground.
+     */
+    public static volatile double NEUTRAL_VERTICAL_INCHES = 2.0;
+    /**
+     * The horizontal inches to get to the high bar position relative to the front of the robot.
+     */
+    public static volatile double HIGH_BAR_HORIZONTAL_INCHES = 5.0;
+    /**
+     * The vertical inches to get to the high bar position relative to the ground.
+     */
+    public static volatile double HIGH_BAR_VERTICAL_INCHES = 30.0;
+    /**
+     * The horizontal inches to get to the low bar position relative to the front of the robot.
+     */
+    public static volatile double LOW_BAR_HORIZONTAL_INCHES = 5.0;
+    /**
+     * The vertical inches to get to the low bar position relative to the ground.
+     */
+    public static volatile double LOW_BAR_VERTICAL_INCHES = 15.0;
+    /**
+     * The horizontal inches to get to the high bucket position relative to the front of the robot.
+      */
+    public static volatile double HIGH_BUCKET_HORIZONTAL_INCHES = 5.0;
+    /**
+     * The vertical inches to get to the high bucket position relative to the ground.
+     */
+    public static volatile double HIGH_BUCKET_VERTICAL_INCHES = 50.0;
+    /**
+     * The horizontal inches to get to the low bucket position relative to the front of the robot
+     */
+    public static volatile double LOW_BUCKET_HORIZONTAL_INCHES = 5.0;
+    /**
+     * The vertical inches to get to the low bucket position relative to the ground.
+     */
+    public static volatile double LOW_BUCKET_VERTICAL_INCHES = 25.0;
+    /**
+     * The vertical inches required to get to the wall pickup position relative to the front of the
+     * robot.
+     */
+    public static volatile double WALL_PICKUP_VERTICAL_INCHES = 6.0;
+    /**
+     * The horizontal inches required to get to the wall pickup position relative to the ground.
+     */
+    public static volatile double WALL_PICKUP_HORIZONTAL_INCHES = 2.0;
 }

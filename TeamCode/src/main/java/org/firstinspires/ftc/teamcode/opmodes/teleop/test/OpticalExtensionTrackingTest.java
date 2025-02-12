@@ -16,8 +16,8 @@ public final class OpticalExtensionTrackingTest extends OpMode {
 
     @Override public void init() {
         initializeOpticalOdometry();
-        leaderExtensionMotor = hardwareMap.get(DcMotor.class, ArmConstants.LEADER_EXTENSION_MOTOR_NAME);
-        followerExtensionMotor = hardwareMap.get(DcMotor.class, ArmConstants.FOLLOWER_EXTENSION_MOTOR_NAME);
+        leaderExtensionMotor = hardwareMap.get(DcMotor.class, ArmConstants.EXTENSION_MOTOR_ONE_NAME);
+        followerExtensionMotor = hardwareMap.get(DcMotor.class, ArmConstants.EXTENSION_MOTOR_TWO_NAME);
         leaderExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         followerExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
