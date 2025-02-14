@@ -169,7 +169,7 @@ public final class Arm {
                 rotationDegrees
                         = potentiometerVoltageToDegrees(rotationPotentiometer.getVoltage());
 
-                if (rotationDegrees < 45) rotationAlreadyHomed = true;
+                if (rotationDegrees < 45.0) rotationAlreadyHomed = true;
                 if (!extensionLimitSwitch.getState()) extensionAlreadyHomed = true;
                 homingState = HomingState.ROTATION;
                 break;
@@ -183,7 +183,7 @@ public final class Arm {
                 rotationDegrees
                         = potentiometerVoltageToDegrees(rotationPotentiometer.getVoltage());
 
-                if (rotationDegrees < 45) {
+                if (rotationDegrees < 45.0) {
                     rotationMotor.setPower(0.0);
                     homingState = HomingState.EXTENSION;
                 }
