@@ -4,6 +4,7 @@ import com.acmerobotics.roadrunner.Arclength;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Pose2dDual;
 import com.acmerobotics.roadrunner.PosePath;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
@@ -15,7 +16,7 @@ public class MeepMeepTesting {
     public static void main(String[] args) {
         System.setProperty("sun.java2d.opengl", "true");
 
-        MeepMeep meepMeep = new MeepMeep(700);
+        MeepMeep meepMeep = new MeepMeep(650);
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
@@ -64,10 +65,89 @@ public class MeepMeepTesting {
                 .splineToLinearHeading(new Pose2d(56, -60, Math.PI / 2), Math.PI / 2, new VelConstraint() {
                     @Override
                     public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
+                        return 20;
+                    }
+                })
+                .splineToSplineHeading(new Pose2d(-5, -33, -Math.PI/1.999), Math.PI/2)
+                .splineToLinearHeading(new Pose2d(-1, -30, -Math.PI/1.999), 0)
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(4, -30, -Math.PI/1.999), 0)
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(8, -34, -Math.PI / 1.999), -Math.PI / 2, new VelConstraint() {
+                    @Override
+                    public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
                         return 10;
                     }
                 })
-                        .splineToSplineHeading(new Pose2d(-3, -33, -Math.PI/1.999), Math.PI/2)
+                .setTangent(-Math.PI/2)
+                .splineToSplineHeading(new Pose2d(40, -55, Math.PI/2), -Math.PI/2)
+                .setTangent(-Math.PI/2)
+                .splineToLinearHeading(new Pose2d(40, -60, Math.PI / 2), Math.PI / 2, new VelConstraint() {
+                    @Override
+                    public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
+                        return 10;
+                    }
+                })
+
+
+                .splineToSplineHeading(new Pose2d(-5, -33, -Math.PI/1.999), Math.PI/2)
+                .splineToLinearHeading(new Pose2d(-1, -30, -Math.PI/1.999), 0)
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(4, -30, -Math.PI/1.999), 0)
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(8, -34, -Math.PI / 1.999), -Math.PI / 2, new VelConstraint() {
+                    @Override
+                    public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
+                        return 10;
+                    }
+                })
+                .setTangent(-Math.PI/2)
+                .splineToSplineHeading(new Pose2d(40, -55, Math.PI/2), -Math.PI/2)
+                .setTangent(-Math.PI/2)
+                .splineToLinearHeading(new Pose2d(40, -60, Math.PI / 2), Math.PI / 2, new VelConstraint() {
+                    @Override
+                    public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
+                        return 10;
+                    }
+                })
+
+
+                .splineToSplineHeading(new Pose2d(-5, -33, -Math.PI/1.999), Math.PI/2)
+                .splineToLinearHeading(new Pose2d(-1, -30, -Math.PI/1.999), 0)
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(4, -30, -Math.PI/1.999), 0)
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(8, -34, -Math.PI / 1.999), -Math.PI / 2, new VelConstraint() {
+                    @Override
+                    public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
+                        return 10;
+                    }
+                })
+                .setTangent(-Math.PI/2)
+                .splineToSplineHeading(new Pose2d(40, -55, Math.PI/2), -Math.PI/2)
+                .setTangent(-Math.PI/2)
+                .splineToLinearHeading(new Pose2d(40, -60, Math.PI / 2), Math.PI / 2, new VelConstraint() {
+                    @Override
+                    public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
+                        return 10;
+                    }
+                })
+
+
+                .splineToSplineHeading(new Pose2d(-5, -33, -Math.PI/1.999), Math.PI/2)
+                .splineToLinearHeading(new Pose2d(-1, -30, -Math.PI/1.999), 0)
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(4, -30, -Math.PI/1.999), 0)
+                .setTangent(0)
+                .splineToSplineHeading(new Pose2d(8, -34, -Math.PI / 1.999), -Math.PI / 2, new VelConstraint() {
+                    @Override
+                    public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
+                        return 10;
+                    }
+                })
+
+                .setTangent(-Math.PI/2)
+                .splineTo(new Vector2d(60, -60), 0)
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_JUICE_DARK)
