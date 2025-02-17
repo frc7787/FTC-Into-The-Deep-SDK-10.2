@@ -46,15 +46,15 @@ public final class RoadrunnerConstants {
     /**
      * The max velocity the robot can achieve, in inches per second.
      */
-    public static volatile double MAX_WHEEL_VELOCITY_INCHES_PER_SECOND = 60.0;
+    public static volatile double MAX_WHEEL_VELOCITY_INCHES_PER_SECOND = 30.0;
     /**
      * The max acceleration the robot can achieve, in inches per second squared.
      */
-    public static volatile double MAX_ACCELERATION_INCHES_PER_SECOND_SQUARED = 50.0;
+    public static volatile double MAX_ACCELERATION_INCHES_PER_SECOND_SQUARED = 20.0;
     /**
      * The max deceleration the robot can achieve, in inches per second squared.
      */
-    public static volatile double MAX_DECELERATION_INCHES_PER_SECOND_SQUARED = -50.0;
+    public static volatile double MAX_DECELERATION_INCHES_PER_SECOND_SQUARED = -20.0;
 
     /**
      * The max angular velocity the robot can achieve, in radians per second.

@@ -3,67 +3,66 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
 @TeleOp(group = "Tuning")
 @Config
-public final class ExtensionPIDTuning extends OpMode {
-    private SparkFunOTOS opticalOdometry;
+public class ExtensionPIDTuning extends OpMode {
     private DcMotorImplEx leaderExtensionMotor, followerExtensionMotor;
     private FtcDashboard ftcDashboard;
 
     public static double TARGET_POSITION = 0.0;
-    public static double KP = 0.0;
-    public static double KI = 0.0;
-    public static double KD = 0.0;
+    public static double P = 0.0;
+    public static double I = 0.0;
+    public static double D = 0.0;
+    public static double POSITIVE_STATIC = 0.0;
+    public static double NEGATIVE_STATIC = 0.0;
+    public static double TOLERANCE = 0.0;
+    public static boolean DISABLED = true;
 
-    private double currentPosition;
+    private double extensionPosition;
 
     private PIDController extensionController;
 
     @Override public void init() {
-        opticalOdometry = hardwareMap.get(SparkFunOTOS.class, "opticalOdometry");
-        configureOpticalOdometry();
-        leaderExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "leaderExtensionMotor");
-        followerExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "followerExtensionMotor");
+        leaderExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "extensionMotorOne");
+        followerExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "extensionMotorTwo");
+        leaderExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        followerExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leaderExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leaderExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         followerExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        extensionController = new PIDController(KP, KI, KD);
-        currentPosition = 0.0;
+        extensionController = new PIDController(P, I, D, POSITIVE_STATIC, NEGATIVE_STATIC);
+        extensionController.setTolerance(TOLERANCE);
+        extensionPosition = 0.0;
         ftcDashboard = FtcDashboard.getInstance();
     }
 
-    private void configureOpticalOdometry() {
-        opticalOdometry.setLinearScalar(1.0);
-        opticalOdometry.calibrateImu(255, true);
-
-        SparkFunOTOS.SignalProcessConfig signalProcessConfig = new SparkFunOTOS.SignalProcessConfig();
-        signalProcessConfig.enAcc = false;
-        signalProcessConfig.enRot = false;
-        opticalOdometry.setSignalProcessConfig(signalProcessConfig);
-        opticalOdometry.setPosition(new SparkFunOTOS.Pose2D(0.0, 0.0, 0.0));
-    }
-
     @Override public void loop() {
-        extensionController.debugSetCoefficients(KP, KI, KD);
-        currentPosition = -opticalOdometry.getPosition().y;
-        double power = extensionController.calculate(currentPosition, TARGET_POSITION);
+        extensionController.debugSetCoefficients(P, I, D, POSITIVE_STATIC, NEGATIVE_STATIC);
+        extensionPosition = leaderExtensionMotor.getCurrentPosition();
+        double power = extensionController.calculate(extensionPosition, TARGET_POSITION);
 
         TelemetryPacket telemetryPacket = new TelemetryPacket();
-        telemetryPacket.put("Current Position", currentPosition);
         telemetryPacket.put("Target Position", TARGET_POSITION);
-        telemetryPacket.put("Error", Math.abs(currentPosition - TARGET_POSITION));
-        telemetryPacket.put("Power", power);
-
+        telemetryPacket.put("Position", extensionPosition);
+        telemetryPacket.put("Error", Math.abs(extensionPosition - TARGET_POSITION));
+        telemetryPacket.put("Extension Power", power);
         ftcDashboard.sendTelemetryPacket(telemetryPacket);
 
-        leaderExtensionMotor.setPower(power);
-        followerExtensionMotor.setPower(power);
+        if (!DISABLED) {
+            leaderExtensionMotor.setPower(power);
+            followerExtensionMotor.setPower(power);
+        } else {
+            leaderExtensionMotor.setPower(0.0);
+            followerExtensionMotor.setPower(0.0);
+        }
     }
 }

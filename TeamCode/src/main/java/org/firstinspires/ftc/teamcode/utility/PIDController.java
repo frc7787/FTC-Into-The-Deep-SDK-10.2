@@ -3,17 +3,19 @@ package org.firstinspires.ftc.teamcode.utility;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public final class PIDController {
-    private double Kp, Ki, Kd;
+    private double Kp, Ki, Kd, KStaticPositive, KStaticNegative;
     private double tolerance;
     private final ElapsedTime timer;
 
     private double lastError, integralSum;
     private boolean isFirstIteration;
 
-    public PIDController(double Kp, double Ki, double Kd) {
+    public PIDController(double Kp, double Ki, double Kd, double KStaticPositive, double KStaticNegative) {
         this.Kp = Kp;
         this.Ki = Ki;
         this.Kd = Kd;
+        this.KStaticPositive = KStaticPositive;
+        this.KStaticNegative = KStaticNegative;
         this.tolerance = 0.0;
         timer = new ElapsedTime();
         reset();
@@ -25,6 +27,11 @@ public final class PIDController {
 
         if (isFirstIteration) {
             output = Kp * error;
+            if (error < 0) {
+                output += KStaticNegative;
+            } else if (error > 0) {
+                output += KStaticPositive;
+            }
             lastError = error;
             timer.reset();
             isFirstIteration = false;
@@ -37,6 +44,13 @@ public final class PIDController {
             integralSum = integralSum + error * deltaTime;
 
             output = Kp * error + Ki * integralSum + Kd * derivative;
+
+            if (error > 0.0) {
+                output += KStaticPositive;
+            } else if (error < 0.0) {
+                output += KStaticNegative;
+            }
+
             lastError = error;
 
             // Reset the timer for the next time
@@ -52,10 +66,18 @@ public final class PIDController {
         this.tolerance = Math.max(0, tolerance);
     }
 
-    public void debugSetCoefficients(double P, double I, double D) {
+    public void debugSetCoefficients(
+            double P,
+            double I,
+            double D,
+            double STATIC_POSITIVE,
+            double STATIC_NEGATIVE
+    ) {
         this.Kp = P;
         this.Ki = I;
         this.Kd = D;
+        this.KStaticPositive = STATIC_POSITIVE;
+        this.KStaticNegative = STATIC_NEGATIVE;
     }
 
     public void reset() {

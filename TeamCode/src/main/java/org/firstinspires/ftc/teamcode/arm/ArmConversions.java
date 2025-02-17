@@ -6,8 +6,12 @@ import androidx.annotation.NonNull;
 
 public final class ArmConversions {
 
-    public static double potentiometerVoltageToDegrees(double voltage) {
-        return voltage / POTENTIOMETER_VOLTS_PER_DEGREE;
+    public static double rotationTicksToDegrees(double ticks) {
+       return (ticks / ROTATION_TICKS_PER_DEGREE) + ROTATION_STARTING_ANGLE;
+    }
+
+    public static double extensionTicksToInches(double ticks) {
+        return (ticks / EXTENSION_TICKS_PER_INCH);
     }
 
     /**
@@ -44,6 +48,20 @@ public final class ArmConversions {
         return new double[]{
                 extensionInches * Math.cos(thetaRadians),
                 extensionInches * Math.sin(thetaRadians)
+        };
+    }
+
+    @NonNull static double[] robotToArmCentric(@NonNull double[] armCentricCartesianCoordinates) {
+        return new double[]{
+                armCentricCartesianCoordinates[0] + ROTATION_HORIZONTAL_OFFSET_INCHES,
+                armCentricCartesianCoordinates[1] + ROTATION_VERTICAL_OFFSET_INCHES
+        };
+    }
+
+    @NonNull static double[] armToRobotCentric(@NonNull double[] robotCentricCartesianCoordinates) {
+        return new double[]{
+                robotCentricCartesianCoordinates[0] - ROTATION_HORIZONTAL_OFFSET_INCHES,
+                robotCentricCartesianCoordinates[1] - ROTATION_VERTICAL_OFFSET_INCHES
         };
     }
 }

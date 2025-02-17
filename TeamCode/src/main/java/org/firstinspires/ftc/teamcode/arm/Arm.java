@@ -5,9 +5,6 @@ import static org.firstinspires.ftc.teamcode.arm.ArmConversions.*;
 
 import androidx.annotation.NonNull;
 
-import com.qualcomm.hardware.rev.RevTouchSensor;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -24,11 +21,9 @@ public final class Arm {
     // Hardware
     // ---------------------------------------------------------------------------------------------
 
-    final DcMotor rotationMotor, extensionMotorOne, extensionMotorTwo;
+    final DcMotor rotationMotor, leaderExtensionMotor, followerExtensionMotor;
     final DigitalChannel frontRotationLimitSwitch, backRotationLimitSwitch, extensionLimitSwitch;
     final Servo intakeServo;
-    final SparkFunOTOS opticalExtensionTracker;
-    final AnalogInput rotationPotentiometer;
 
     // ---------------------------------------------------------------------------------------------
     // State
@@ -49,6 +44,7 @@ public final class Arm {
 
     boolean atPosition;
     boolean debug;
+    boolean extensionLimitSwitchWasPressed, frontRotationLimitSwitchWasPressed;
 
     // ---------------------------------------------------------------------------------------------
     // Other
@@ -59,10 +55,10 @@ public final class Arm {
     public Arm(@NonNull HardwareMap hardwareMap) {
         rotationMotor = hardwareMap.get(DcMotor.class, "rotationMotor");
         rotationMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionMotorOne = hardwareMap.get(DcMotor.class, "extensionMotorOne");
-        extensionMotorTwo = hardwareMap.get(DcMotor.class, "extensionMotorTwo");
-        extensionMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
+        leaderExtensionMotor = hardwareMap.get(DcMotor.class, "extensionMotorOne");
+        followerExtensionMotor = hardwareMap.get(DcMotor.class, "extensionMotorTwo");
+        leaderExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        followerExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         frontRotationLimitSwitch = hardwareMap.get(DigitalChannel.class, "frontRotationLimitSwitch");
         frontRotationLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
@@ -75,18 +71,13 @@ public final class Arm {
         intakeServo.setDirection(Servo.Direction.REVERSE);
         intakeServo.setPosition(0.0);
 
-        rotationPotentiometer = hardwareMap.get(AnalogInput.class, "rotationPotentiometer");
-
         MotorUtility.setModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER,
                 rotationMotor,
-                extensionMotorOne,
-                extensionMotorTwo
+                leaderExtensionMotor,
+                followerExtensionMotor
         );
 
-        opticalExtensionTracker = hardwareMap.get(SparkFunOTOS.class, "opticalOdometry");
-        configureOpticalTracker();
-
-        state = State.MANUAL;
+        state = State.HOMING;
         homingState = HomingState.START;
         rotationAlreadyHomed = false;
         extensionAlreadyHomed = false;
@@ -103,19 +94,13 @@ public final class Arm {
 
         intakePosition = INTAKE_CLOSED_POSITION;
 
-        rotationController = new PIDController(ROTATION_KP, ROTATION_KI, ROTATION_KD);
-        rotationController.setTolerance(ROTATION_TOLERANCE_DEGREES);
-        extensionController = new PIDController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI);
-    }
+        rotationController = new PIDController(ROTATION_KP, ROTATION_KI, ROTATION_KD, ROTATION_KSTATIC, ROTATION_KSTATIC);
+        rotationController.setTolerance(ROTATION_TOLERANCE_TICKS);
+        extensionController = new PIDController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI, EXTENSION_KSTATIC, EXTENSION_KSTATIC);
+        extensionController.setTolerance(EXTENSION_TOLERANCE_TICKS);
 
-    private void configureOpticalTracker() {
-        opticalExtensionTracker.setLinearScalar(OPTICAL_ODOMETRY_LINEAR_SCALAR);
-        opticalExtensionTracker.calibrateImu(1, true);
-        SparkFunOTOS.SignalProcessConfig signalProcessConfig = new SparkFunOTOS.SignalProcessConfig();
-        signalProcessConfig.enAcc = false;
-        signalProcessConfig.enRot = false;
-        opticalExtensionTracker.setSignalProcessConfig(signalProcessConfig);
-        opticalExtensionTracker.setPosition(new SparkFunOTOS.Pose2D(0.0, 0.0, 0.0));
+        extensionLimitSwitchWasPressed = false;
+        frontRotationLimitSwitchWasPressed = false;
     }
 
     /**
@@ -138,22 +123,46 @@ public final class Arm {
             case MANUAL:
                 rotationPower = manualRotationInput;
                 extensionPower = manualExtensionInput;
+
+                if (horizontalInches >= MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC - 2.0) {
+                    if (extensionPower > 0.0) {
+                        extensionPower = 0.0;
+                    }
+                    if (rotationPower < 0.0) {
+                        rotationPower /= 2.0;
+                        extensionPower = -1.0;
+                    }
+                }
                 break;
         }
 
-        if (!frontRotationLimitSwitch.getState() && rotationPower < 0.0) rotationPower = 0.0;
-        if (!backRotationLimitSwitch.getState() && rotationPower > 0.0) rotationPower = 0.0;
-        if (!extensionLimitSwitch.getState() && extensionPower < 0.0) extensionPower = 0.0;
+        rotationPower = Math.max(-0.7, rotationPower);
+
+        if (frontRotationLimitSwitch.getState() && rotationPower < 0.0) {
+            rotationPower = 0.05;
+            rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rotationMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        if (backRotationLimitSwitch.getState() && rotationPower > 0.0) rotationPower = 0.0;
+
+        boolean extensionLimitSwitchIsPressed = extensionLimitSwitch.getState();
+
+        if (extensionLimitSwitchIsPressed && !extensionLimitSwitchWasPressed) {
+            extensionPower = Math.min(0.0, extensionPower);
+            leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leaderExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        extensionLimitSwitchWasPressed = extensionLimitSwitchIsPressed;
 
         rotationMotor.setPower(rotationPower);
-        extensionMotorOne.setPower(extensionPower);
-        extensionMotorTwo.setPower(extensionPower);
+        leaderExtensionMotor.setPower(extensionPower);
+        followerExtensionMotor.setPower(extensionPower);
     }
 
     private void updatePositionInformation() {
-        extensionInches = -opticalExtensionTracker.getPosition().y;
-        rotationDegrees = potentiometerVoltageToDegrees(rotationPotentiometer.getVoltage());
-        double[] cartesianCoordinates = polarToCartesian(extensionInches, rotationPosition);
+        extensionInches = extensionTicksToInches(leaderExtensionMotor.getCurrentPosition());
+        rotationDegrees = rotationTicksToDegrees(rotationMotor.getCurrentPosition());
+        double[] cartesianCoordinates = polarToCartesian(extensionInches, rotationDegrees);
         horizontalInches = cartesianCoordinates[0];
         verticalInches = cartesianCoordinates[1];
     }
@@ -166,44 +175,46 @@ public final class Arm {
 
         switch (homingState) {
             case START:
-                rotationDegrees
-                        = potentiometerVoltageToDegrees(rotationPotentiometer.getVoltage());
-
-                if (rotationDegrees < 45.0) rotationAlreadyHomed = true;
-                if (!extensionLimitSwitch.getState()) extensionAlreadyHomed = true;
-                homingState = HomingState.ROTATION;
-                break;
-            case ROTATION:
-                if (rotationAlreadyHomed) {
-                    homingState = HomingState.EXTENSION;
-                    break;
-                }
-
-                rotationMotor.setPower(HOMING_ROTATION_POWER);
-                rotationDegrees
-                        = potentiometerVoltageToDegrees(rotationPotentiometer.getVoltage());
-
-                if (rotationDegrees < 45.0) {
-                    rotationMotor.setPower(0.0);
-                    homingState = HomingState.EXTENSION;
-                }
+                if (frontRotationLimitSwitch.getState()) rotationAlreadyHomed = true;
+                if (extensionLimitSwitch.getState()) extensionAlreadyHomed = true;
+                homingState = HomingState.EXTENSION;
                 break;
             case EXTENSION:
                 if (extensionAlreadyHomed) {
-                    homingState = HomingState.COMPLETE;
+                    homingState = HomingState.ROTATION;
                     break;
                 }
+                leaderExtensionMotor.setPower(HOMING_EXTENSION_POWER);
+                followerExtensionMotor.setPower(HOMING_EXTENSION_POWER);
 
-                extensionMotorOne.setPower(HOMING_EXTENSION_POWER);
-                extensionMotorTwo.setPower(HOMING_EXTENSION_POWER);
+                if (extensionLimitSwitch.getState()) {
+                    leaderExtensionMotor.setPower(0.0);
+                    followerExtensionMotor.setPower(0.0);
+                    leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    followerExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    homingState = HomingState.ROTATION;
+                }
+                break;
+            case ROTATION:
+                if (rotationAlreadyHomed) {
+                    homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
+                    break;
+                }
+                rotationMotor.setPower(HOMING_ROTATION_POWER);
 
-                if (!extensionLimitSwitch.getState()) {
-                    opticalExtensionTracker.resetTracking();
-                    extensionMotorOne.setPower(0.0);
-                    extensionMotorTwo.setPower(0.0);
+                if (frontRotationLimitSwitch.getState()) {
+                    homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
+                }
+                break;
+            case ROTATION_BACKLASH_REMOVAL:
+                rotationMotor.setPower(ROTATION_BACKLASH_REMOVAL_POWER);
+
+                if (!frontRotationLimitSwitch.getState()) {
+                    rotationMotor.setPower(0.0);
+                    rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    rotationMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     homingState = HomingState.COMPLETE;
                 }
-                opticalExtensionTracker.resetTracking();
                 break;
             case COMPLETE:
                 state = State.MANUAL;
@@ -213,8 +224,8 @@ public final class Arm {
 
     public void forceManualControl(double rotation, double extension) {
         rotationMotor.setPower(rotation);
-        extensionMotorOne.setPower(extension);
-        extensionMotorTwo.setPower(extension);
+        leaderExtensionMotor.setPower(extension);
+        followerExtensionMotor.setPower(extension);
     }
 
     /**
@@ -293,18 +304,20 @@ public final class Arm {
         telemetry.addData("Vertical Inches", verticalInches);
         telemetry.addData("Horizontal Target Inches", horizontalTargetInches);
         telemetry.addData("Vertical Target Inches", verticalTargetInches);
+        telemetry.addData("Extension Position", leaderExtensionMotor.getCurrentPosition());
+        telemetry.addData("Rotation Position", rotationMotor.getCurrentPosition());
     }
 
     public void globalDebug(@NonNull Telemetry telemetry) {
         telemetry.addLine("----- Debug Global -----");
         telemetry.addData("Arm State ", state);
         telemetry.addData("Homing State ", homingState);
-        telemetry.addData("Front Rotation Limit Switch", !frontRotationLimitSwitch.getState());
-        telemetry.addData("Back Rotation Limit Switch", !backRotationLimitSwitch.getState());
-        telemetry.addData("Extension Limit Switch", !extensionLimitSwitch.getState());
+        telemetry.addData("Front Rotation Limit Switch", frontRotationLimitSwitch.getState());
+        telemetry.addData("Back Rotation Limit Switch", backRotationLimitSwitch.getState());
+        telemetry.addData("Extension Limit Switch", extensionLimitSwitch.getState());
         telemetry.addData("Rotation Power", rotationMotor.getPower());
-        telemetry.addData("Leader Extension Power", extensionMotorOne.getPower());
-        telemetry.addData("Follower Extension Power", extensionMotorTwo.getPower());
+        telemetry.addData("Leader Extension Power", leaderExtensionMotor.getPower());
+        telemetry.addData("Follower Extension Power", followerExtensionMotor.getPower());
         telemetry.addData("Intake Position", intakePosition);
     }
 
@@ -329,6 +342,7 @@ public final class Arm {
         START,
         EXTENSION,
         ROTATION,
+        ROTATION_BACKLASH_REMOVAL,
         COMPLETE
     }
 }

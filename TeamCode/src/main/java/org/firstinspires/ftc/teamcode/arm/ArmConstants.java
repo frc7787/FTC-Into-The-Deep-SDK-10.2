@@ -24,22 +24,17 @@ public final class ArmConstants {
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * How many inches to extend during the homing sequence to ensure a sample doesn't get stuck
-     * inside of our robot.
-     */
-    public static volatile double HOMING_SAFETY_THRESHOLD_INCHES = 3.0;
-    /**
-     * The power to give the extension motors during the safety extension.
-     */
-    public static volatile double HOMING_SAFETY_EXTENSION_POWER = 0.6;
-    /**
      * The power to give the extension motors during homing
      */
     public static volatile double HOMING_EXTENSION_POWER = -1.0;
     /**
      * The power to give the rotation motors during homing
      */
-    public static volatile double HOMING_ROTATION_POWER = -1.0;
+    public static volatile double HOMING_ROTATION_POWER = -0.5;
+    /**
+     * The power to give the rotation motors while removing the backlash
+     */
+    public static volatile double ROTATION_BACKLASH_REMOVAL_POWER = 0.6;
 
     // ---------------------------------------------------------------------------------------------
     // Intake
@@ -76,7 +71,7 @@ public final class ArmConstants {
     /**
      * The proportional value for the extension PID
      */
-    public static volatile double EXTENSION_KP = 0.75;
+    public static volatile double EXTENSION_KP = 0.001;
     /**
      * The integral value for the extension PID. This is should always be here and is merely present for
      * completeness.
@@ -85,19 +80,28 @@ public final class ArmConstants {
     /**
      * The derivative value for the extension PID
      */
-    public static volatile double EXTENSION_KD = 0.013;
+    public static volatile double EXTENSION_KD = 0.0001;
     /**
-     * Linear scalar for the SparkFunOTOS. Cannot be more than 1.1 or less than 0.86.
+     * The static value for the extension PID
      */
-    public static volatile double OPTICAL_ODOMETRY_LINEAR_SCALAR = 1.0;
+    public static volatile double EXTENSION_KSTATIC = 0.0;
+    /**
+     * Extension Ticks Per Inch
+      */
+    public static volatile double EXTENSION_TICKS_PER_INCH = 50.0;
     /**
      * The minimum extension distance between the center of rotation and the end of the arm.
      */
-    public static volatile double MIN_EXT_INCHES = 11.0;
+    public static volatile double MIN_EXT_INCHES = 17.0;
     /**
      * The maximum extension distance between the center of rotation and the end of the arm.
      */
     public static volatile double MAX_EXT_INCHES = 50.0;
+    /**
+     * How far away from the target position (in ticks) the extension can be before it is considered
+     * at position
+     */
+    public static volatile double EXTENSION_TOLERANCE_TICKS = 50.0;
 
     // ----------------------------------------------------------------------------------------------
     // Rotation
@@ -117,13 +121,13 @@ public final class ArmConstants {
      */
     public static volatile double ROTATION_KD = 0.013;
     /**
-     * How many volts the potentiometer returns per degree.
+     * The static value for the rotation PID
      */
-    public static volatile double POTENTIOMETER_VOLTS_PER_DEGREE = 0.009122222222;
+    public static volatile double ROTATION_KSTATIC = 0.1;
     /**
      * How many degrees away from target is considered at position
      */
-    public static volatile double ROTATION_TOLERANCE_DEGREES = 0.5;
+    public static volatile double ROTATION_TOLERANCE_TICKS = 30.0;
     /**
      * The minimum angle the arm can rotate to, in degrees.
      */
@@ -135,7 +139,11 @@ public final class ArmConstants {
     /**
      * The starting angle of the arm, in degrees.
      */
-    public static volatile double ROTATION_STARTING_ANGLE = -16.0;
+    public static volatile double ROTATION_STARTING_ANGLE = -12.0;
+    /**
+     * The amount of ticks per degree of rotation of the arm
+     */
+    public static volatile double ROTATION_TICKS_PER_DEGREE = 21.22;
 
     // ---------------------------------------------------------------------------------------------
     // Arm
@@ -144,11 +152,11 @@ public final class ArmConstants {
     /**
      * The distance between the center of rotation and the front of the robot.
      */
-    public static volatile double ROTATION_HORIZONTAL_OFFSET_INCHES = 9.0;
+    public static volatile double ROTATION_HORIZONTAL_OFFSET_INCHES = 18;
     /**
      * The distance between the center of rotation and the ground
      */
-    public static volatile double ROTATION_VERTICAL_OFFSET_INCHES = -4.75;
+    public static volatile double ROTATION_VERTICAL_OFFSET_INCHES = -6;
 
     /**
      * The maximum horizontal extension of the robot relative to the front of the robot.
@@ -156,7 +164,7 @@ public final class ArmConstants {
     public static volatile double MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC = 32.0;
 
     // ---------------------------------------------------------------------------------------------
-    //
+    // Positions
     // ---------------------------------------------------------------------------------------------
 
     /**

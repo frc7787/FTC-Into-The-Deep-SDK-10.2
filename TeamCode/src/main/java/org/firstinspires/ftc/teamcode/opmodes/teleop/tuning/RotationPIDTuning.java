@@ -1,54 +1,53 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.tuning;
 
-import static org.firstinspires.ftc.teamcode.arm.ArmConversions.potentiometerVoltageToDegrees;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 
-import org.firstinspires.ftc.teamcode.arm.ArmConstants;
-import org.firstinspires.ftc.teamcode.utility.MotorUtility;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
-@TeleOp(group = "Tuning")
+@TeleOp
 @Config
-public final class RotationPIDTuning extends OpMode {
-    public static double TARGET_DEGREES = 20.0;
-    public static double ROT_P = 0.0;
-    public static double ROT_I = 0.0;
-    public static double ROT_D = 0.0;
-    public static double TOLERANCE = 0.0;
-
-    private DcMotor rotationMotor;
-    private FtcDashboard ftcDashboard;
+public class RotationPIDTuning extends OpMode {
     private PIDController rotationController;
-    private AnalogInput potentiometer;
+    private DcMotorImplEx rotationMotor;
+    private FtcDashboard ftcDashboard;
+
+    public static double P = 0.0;
+    public static double I = 0.0;
+    public static double D = 0.0;
+    public static double TARGET_POSITION = 0.0;
+    public static boolean DISABLED = true;
 
     @Override public void init() {
+        rotationMotor = hardwareMap.get(DcMotorImplEx.class, "rotationMotor");
+        rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rotationMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rotationController = new PIDController(P, I, D, 0.0, 0.0);
         ftcDashboard = FtcDashboard.getInstance();
-        rotationMotor = hardwareMap.get(DcMotor.class, "rotationMotor");
-        MotorUtility.reset(rotationMotor);
-        rotationMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rotationController = new PIDController(ROT_P, ROT_I, ROT_D);
-        rotationController.setTolerance(TOLERANCE);
-        potentiometer = hardwareMap.get(AnalogInput.class, "rotationPotentiometer");
     }
 
     @Override public void loop() {
-        rotationController.debugSetCoefficients(ROT_P, ROT_I, ROT_D);
-        rotationController.setTolerance(TOLERANCE);
-        double degrees = potentiometerVoltageToDegrees(potentiometer.getVoltage());
-        double power = rotationController.calculate(degrees, TARGET_DEGREES);
-        rotationMotor.setPower(power);
+        rotationController.debugSetCoefficients(P, I, D, 0.0, 0.0);
+        int rotationPosition = rotationMotor.getCurrentPosition();
+        double power = rotationController.calculate(rotationPosition, rotationPosition);
+
         TelemetryPacket telemetryPacket = new TelemetryPacket();
-        telemetryPacket.put("Degrees", degrees);
-        telemetryPacket.put("Target Degrees", TARGET_DEGREES);
-        telemetryPacket.put("Power", power);
-        telemetryPacket.put("Error", TARGET_DEGREES - degrees);
+
+        telemetryPacket.put("Target Position", TARGET_POSITION);
+        telemetryPacket.put("Position", rotationPosition);
+        telemetryPacket.put("Error", Math.abs(rotationPosition - TARGET_POSITION));
+        telemetryPacket.put("Extension Power", power);
         ftcDashboard.sendTelemetryPacket(telemetryPacket);
+
+        if (!DISABLED) {
+            rotationMotor.setPower(0.0);
+        } else {
+            rotationMotor.setPower(power);
+        }
     }
 }

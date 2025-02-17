@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.*;
 
 import static org.firstinspires.ftc.teamcode.arm.ArmConstants.*;
+import static org.firstinspires.ftc.teamcode.arm.ArmConversions.extensionTicksToInches;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -25,7 +26,6 @@ public final class ArmHardwareTest extends OpMode {
     private DcMotor rotationMotor, extensionMotorOne, extensionMotorTwo;
     private Servo intakeServo;
     private DigitalChannel extensionLimitSwitch, frontRotationLimitSwitch, backRotationLimitSwitch;
-    private AnalogInput rotationPotentiometer;
     private MecanumDrive mecanumDrive;
 
     @Override public void init() {
@@ -35,6 +35,21 @@ public final class ArmHardwareTest extends OpMode {
         extensionMotorTwo = hardwareMap.get(DcMotor.class, EXTENSION_MOTOR_TWO_NAME);
         extensionMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         extensionMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        MotorUtility.setModes(
+                DcMotor.RunMode.STOP_AND_RESET_ENCODER,
+                extensionMotorOne,
+                extensionMotorTwo,
+                rotationMotor
+        );
+
+        MotorUtility.setModes(
+                DcMotor.RunMode.RUN_WITHOUT_ENCODER,
+                extensionMotorOne,
+                extensionMotorTwo,
+                rotationMotor
+        );
+
         intakeServo = hardwareMap.get(Servo.class, INTAKE_SERVO_NAME);
         intakeServo.setDirection(Servo.Direction.REVERSE);
         intakeServo.setPosition(0.0);
@@ -46,7 +61,6 @@ public final class ArmHardwareTest extends OpMode {
         extensionLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
         frontRotationLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
         backRotationLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
-        rotationPotentiometer = hardwareMap.get(AnalogInput.class, "rotationPotentiometer");
     }
 
     @Override public void loop() {
@@ -76,8 +90,8 @@ public final class ArmHardwareTest extends OpMode {
         telemetry.addData("Rotation Motor Power", rotationMotor.getPower());
         telemetry.addData("Extension Motor One Power", extensionMotorOne.getPower());
         telemetry.addData("Extension Motor Two Power", extensionMotorTwo.getPower());
-        telemetry.addData("Potentiometer Voltage", rotationPotentiometer.getVoltage());
-        telemetry.addData("Rotation Angle",
-                (rotationPotentiometer.getVoltage() / POTENTIOMETER_VOLTS_PER_DEGREE) - ROTATION_STARTING_ANGLE);
+        telemetry.addData("Rotation Position", rotationMotor.getCurrentPosition());
+        telemetry.addData("Extension Position", extensionMotorOne.getCurrentPosition());
+        telemetry.addData("Inches", extensionTicksToInches(extensionMotorOne.getCurrentPosition()));
     }
 }

@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -27,8 +26,8 @@ public final class ArmDebug {
         telemetry.addData("Back Rotation Limit Switch", !arm.backRotationLimitSwitch.getState());
         telemetry.addData("Extension Limit Switch", !arm.extensionLimitSwitch.getState());
         telemetry.addData("Rotation Power", arm.rotationMotor.getPower());
-        telemetry.addData("Leader Extension Power", arm.extensionMotorOne.getPower());
-        telemetry.addData("Follower Extension Power", arm.extensionMotorTwo.getPower());
+        telemetry.addData("Leader Extension Power", arm.leaderExtensionMotor.getPower());
+        telemetry.addData("Follower Extension Power", arm.followerExtensionMotor.getPower());
         telemetry.addData("Intake Position", arm.intakePosition);
     }
 
