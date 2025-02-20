@@ -26,7 +26,7 @@ public class MeepMeepTesting {
 
         myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(8, -62, -Math.PI/2))
                 .setTangent(Math.PI/2)
-                .splineToLinearHeading(new Pose2d(-4, -33, -Math.PI/2), Math.PI/2)
+                .splineToLinearHeading(new Pose2d(-4, -30, -Math.PI/2), Math.PI/2)
                 .setTangent(Math.PI/2)
                 .splineToLinearHeading(new Pose2d(0, -28, -Math.PI / 2), 0, new VelConstraint() {
                     @Override
@@ -35,13 +35,13 @@ public class MeepMeepTesting {
                     }
                 })
                 .setTangent(0)
-                .splineToLinearHeading(new Pose2d(12, -33, -Math.PI/2), 0)
+                .splineToSplineHeading(new Pose2d(8, -30, -Math.PI/2), -Math.PI/2)
 
                 //splined away from bar
-                .setTangent(0)
-                .splineToSplineHeading(new Pose2d(35, -30, Math.PI/2), Math.PI/2)
+                .setTangent(-Math.PI/2)
+                .splineTo(new Vector2d(35, -30), Math.PI/2)
                 .setTangent(Math.PI/2)
-                .splineToLinearHeading(new Pose2d(42, -14, Math.PI/2), 0)
+                .splineToSplineHeading(new Pose2d(42, -14, Math.PI/2), 0)
                 .setTangent(0)
                 .splineToLinearHeading(new Pose2d(48, -24, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
