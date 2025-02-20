@@ -46,25 +46,25 @@ public final class RoadrunnerConstants {
     /**
      * The max velocity the robot can achieve, in inches per second.
      */
-    public static volatile double MAX_WHEEL_VELOCITY_INCHES_PER_SECOND = 30.0;
+    public static volatile double MAX_WHEEL_VELOCITY_INCHES_PER_SECOND = 50.0;
     /**
      * The max acceleration the robot can achieve, in inches per second squared.
      */
-    public static volatile double MAX_ACCELERATION_INCHES_PER_SECOND_SQUARED = 20.0;
+    public static volatile double MAX_ACCELERATION_INCHES_PER_SECOND_SQUARED = 40.0;
     /**
      * The max deceleration the robot can achieve, in inches per second squared.
      */
-    public static volatile double MAX_DECELERATION_INCHES_PER_SECOND_SQUARED = -20.0;
+    public static volatile double MAX_DECELERATION_INCHES_PER_SECOND_SQUARED = -40.0;
 
     /**
      * The max angular velocity the robot can achieve, in radians per second.
      */
-    public static volatile double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = Math.PI;
+    public static volatile double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = Math.PI*1.5;
 
     /**
      * The max angular acceleration the robot can achieve, in radians per second squared.
      */
-    public static volatile double MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = Math.PI;
+    public static volatile double MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = Math.PI*1.2;
 
     /**
      * The axial (forward / backward) gain for path following. The higher the number the more it
