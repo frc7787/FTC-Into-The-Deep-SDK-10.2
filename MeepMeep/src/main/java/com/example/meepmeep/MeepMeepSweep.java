@@ -12,7 +12,7 @@ import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 import org.jetbrains.annotations.NotNull;
 
-public class MeepMeepTesting {
+public class MeepMeepSweep {
     public static void main(String[] args) {
         System.setProperty("sun.java2d.opengl", "true");
 
@@ -35,36 +35,26 @@ public class MeepMeepTesting {
                     }
                 })
                 .setTangent(0)
-                .splineToSplineHeading(new Pose2d(9, -32, -Math.PI/2), -Math.PI/2)
+                .splineToLinearHeading(new Pose2d(12, -33, -Math.PI/2), 0)
 
                 //splined away from bar
-                .setTangent(-Math.PI/2)
-                .splineTo(new Vector2d(22, -40), 0)
-                .setTangent(0)
-                .splineTo(new Vector2d(33, -30), Math.PI/2)
-                .setTangent(Math.PI/2)
-                .splineToSplineHeading(new Pose2d(42, -14, Math.PI/2), 0)
-                .setTangent(0)
-                .splineToLinearHeading(new Pose2d(48, -24, Math.PI/2), -Math.PI/2)
-                .setTangent(-Math.PI/2)
-                .splineToSplineHeading(new Pose2d(43, -53, Math.PI/1.8), Math.PI/1.8)
-                .setTangent(Math.PI/1.8)
-                .splineToLinearHeading(new Pose2d(48, -14, Math.PI/2), 0)
+                .splineToSplineHeading(new Pose2d(36, -36, Math.PI/4), 0)
+                .setTangent(-Math.PI/4)
+                .splineToSplineHeading(new Pose2d(41, -40, -Math.PI/4), -Math.PI/4)
+                .setTangent(Math.PI/4)
+                .splineToSplineHeading(new Pose2d(46, -36, Math.PI/4), Math.PI/4)
+                .setTangent(-Math.PI/4)
+                .splineToSplineHeading(new Pose2d(51, -40, -Math.PI/4), -Math.PI/4)
+                .setTangent(Math.PI/4)
+                .splineToSplineHeading(new Pose2d(56, -36, Math.PI/4), Math.PI/4)
+                .setTangent(-3*Math.PI/4)
+                .splineToSplineHeading(new Pose2d(51, -40, -Math.PI/4), -3*Math.PI/4)
+                .setTangent(3*Math.PI/4)
 
 
-                .setTangent(0)
-                .splineToSplineHeading(new Pose2d(56, -24, Math.PI/2.05), -Math.PI/2)
+                .splineTo(new Vector2d(40, -55), -Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .splineToSplineHeading(new Pose2d(45, -53, Math.PI/2.2), Math.PI/1.5)
-                .setTangent(Math.PI/1.5)
-                .splineToSplineHeading(new Pose2d(54, -14, Math.PI/2), 0)
-
-                .setTangent(0)
-                .splineToSplineHeading(new Pose2d(64, -24, Math.PI/2), -Math.PI/2)
-                .setTangent(-Math.PI/2)
-                .splineToLinearHeading(new Pose2d(56, -55, Math.PI/2), -Math.PI/2)
-                .setTangent(-Math.PI/2)
-                .splineToLinearHeading(new Pose2d(56, -62, Math.PI / 2), Math.PI / 2, (pose2dDual, posePath, v) -> 20)
+                .splineToLinearHeading(new Pose2d(40, -62, Math.PI / 2), Math.PI / 2, (pose2dDual, posePath, v) -> 20)
                 .splineToSplineHeading(new Pose2d(-4, -32, -Math.PI/1.999), Math.PI/2)
 //                .splineToLinearHeading(new Pose2d(-1, -30, -Math.PI/1.999), 0)
 //                .setTangent(0)
