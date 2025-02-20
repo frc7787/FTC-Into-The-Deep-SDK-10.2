@@ -7,11 +7,19 @@ import androidx.annotation.NonNull;
 public final class ArmConversions {
 
     public static double rotationTicksToDegrees(double ticks) {
-       return (ticks / ROTATION_TICKS_PER_DEGREE) + ROTATION_STARTING_ANGLE;
+       return (ticks / ROTATION_TICKS_PER_DEGREE);
+    }
+
+    public static int rotationDegreesToTicks(double degrees) {
+        return (int) (degrees * ROTATION_TICKS_PER_DEGREE);
     }
 
     public static double extensionTicksToInches(double ticks) {
         return (ticks / EXTENSION_TICKS_PER_INCH);
+    }
+
+    public static int extensionInchesToTicks(double inches) {
+        return (int) (inches * EXTENSION_TICKS_PER_INCH);
     }
 
     /**

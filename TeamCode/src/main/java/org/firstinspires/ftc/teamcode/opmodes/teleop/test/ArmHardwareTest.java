@@ -10,10 +10,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
 
@@ -23,16 +25,16 @@ public final class ArmHardwareTest extends OpMode {
     // Hardware
     // ---------------------------------------------------------------------------------------------
 
-    private DcMotor rotationMotor, extensionMotorOne, extensionMotorTwo;
+    private DcMotorImplEx rotationMotor, extensionMotorOne, extensionMotorTwo;
     private Servo intakeServo;
     private DigitalChannel extensionLimitSwitch, frontRotationLimitSwitch, backRotationLimitSwitch;
     private MecanumDrive mecanumDrive;
 
     @Override public void init() {
-        rotationMotor = hardwareMap.get(DcMotor.class, ROTATION_MOTOR_NAME);
+        rotationMotor = hardwareMap.get(DcMotorImplEx.class, ROTATION_MOTOR_NAME);
         rotationMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionMotorOne = hardwareMap.get(DcMotor.class, EXTENSION_MOTOR_ONE_NAME);
-        extensionMotorTwo = hardwareMap.get(DcMotor.class, EXTENSION_MOTOR_TWO_NAME);
+        extensionMotorOne = hardwareMap.get(DcMotorImplEx.class, EXTENSION_MOTOR_ONE_NAME);
+        extensionMotorTwo = hardwareMap.get(DcMotorImplEx.class, EXTENSION_MOTOR_TWO_NAME);
         extensionMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         extensionMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -93,5 +95,7 @@ public final class ArmHardwareTest extends OpMode {
         telemetry.addData("Rotation Position", rotationMotor.getCurrentPosition());
         telemetry.addData("Extension Position", extensionMotorOne.getCurrentPosition());
         telemetry.addData("Inches", extensionTicksToInches(extensionMotorOne.getCurrentPosition()));
+        telemetry.addData("Leader Extension Current", extensionMotorOne.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Follower Extension Current", extensionMotorTwo.getCurrent(CurrentUnit.AMPS));
     }
 }

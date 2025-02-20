@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.arm.Arm;
-import static org.firstinspires.ftc.teamcode.arm.ArmConstants.*;
 import org.firstinspires.ftc.teamcode.arm.ArmDebug;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
@@ -32,46 +31,51 @@ public final class Main extends OpMode {
         previousGamepad1.copy(currentGamepad1);
         currentGamepad1.copy(gamepad1);
 
+        if (gamepad1.options) {
+            mecanumDrive.resetIMU();
+        }
+
         double drive = -gamepad1.left_stick_y;
         drive *= Math.abs(drive);
         double strafe = gamepad1.left_stick_x;
         strafe *= Math.abs(strafe);
         double turn = gamepad1.right_stick_x;
         turn *= Math.abs(turn);
+        turn *= 0.7;
+
+        if (gamepad2.left_bumper) {
+            arm.setIntakePosition(0.36);
+        } else if (gamepad2.right_bumper) {
+            arm.setIntakePosition(0.08);
+        }
 
         switch (state) {
             case HOMING:
-                intakeControl();
                 if (arm.state() != Arm.State.HOMING) state = TeleOpState.STANDARD;
                 break;
             case STANDARD:
-                if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
-                    gamepad1.rumble(0.1, 0.1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                    gamepad2.rumble(0.1, 0.1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                    state = TeleOpState.SUB;
-                    break;
-                }
-
-                intakeControl();
-
-                double rotationInput = -gamepad2.left_stick_y;
+                double rotationInput = gamepad2.left_stick_y;
                 double extensionInput = -gamepad2.right_stick_y;
 
-                arm.manualControl(rotationInput, extensionInput);
-
-                break;
-            case SUB:
-                if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
-                    gamepad1.stopRumble();
-                    gamepad2.stopRumble();
-                    state = TeleOpState.STANDARD;
+                if (Math.abs(rotationInput) > 0.0 || Math.abs(extensionInput) > 0.0) {
+                    arm.manualControl(rotationInput, extensionInput);
+                } else if (gamepad2.triangle) {
+                    arm.setTargetPositionPolar(25.5, 93.0); // High bar
+                } else if (gamepad2.circle) {
+                    arm.setTargetPositionPolar(40.0, 60.0); // High bucket
+                } else if (gamepad2.square) {
+                    arm.setTargetPositionPolar(0.0, 89.5); // Wall Pickup
+                } else if (gamepad2.cross) {
+                    arm.setTargetPositionPolar(1.0, 5.0); // Sub
+                } else if (gamepad2.dpad_down) {
+                    arm.setTargetPositionPolar(0.0, -9.0); // Home
                 }
                 break;
         }
 
         telemetry.addData("State", state);
 
-        mecanumDrive.robotCentric(drive, strafe, turn);
+        mecanumDrive.fieldCentric(drive, strafe, turn);
         arm.update();
         arm.globalDebug(telemetry);
         arm.positionDebug(telemetry);
@@ -79,9 +83,9 @@ public final class Main extends OpMode {
 
     private void intakeControl() {
         if (gamepad2.left_bumper) {
-            arm.setIntakePosition(INTAKE_OPEN_POSITION);
+            arm.setIntakePosition(0.36);
         } else if (gamepad2.right_bumper) {
-            arm.setIntakePosition(INTAKE_CLOSED_POSITION);
+            arm.setIntakePosition(0.08);
         }
     }
 
@@ -97,11 +101,5 @@ public final class Main extends OpMode {
          * the arm to scoring positions. Also allows the operator manual control.
          */
         STANDARD,
-        /**
-         * Sub mode gives the driver control over the movement of the arm for picking up in the sub.
-         * Can be transitioned to and from on button press.
-         */
-        SUB
-
     }
 }

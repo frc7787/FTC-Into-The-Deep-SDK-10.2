@@ -32,13 +32,11 @@ public class ExtensionPIDTuning extends OpMode {
 
     @Override public void init() {
         leaderExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "extensionMotorOne");
-        followerExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "extensionMotorTwo");
         leaderExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        followerExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leaderExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leaderExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        followerExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        followerExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "extensionMotorTwo");
+        followerExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         extensionController = new PIDController(P, I, D, POSITIVE_STATIC, NEGATIVE_STATIC);
         extensionController.setTolerance(TOLERANCE);
         extensionPosition = 0.0;

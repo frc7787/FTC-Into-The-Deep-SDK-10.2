@@ -107,6 +107,10 @@ public final class MecanumDrive {
         localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), pose);
     }
 
+    public void resetIMU() {
+        lazyImu.get().resetYaw();
+    }
+
     public void robotCentric(double drive, double strafe, double turn) {
         double thetaRadians = StrictMath.atan2(drive, strafe);
 

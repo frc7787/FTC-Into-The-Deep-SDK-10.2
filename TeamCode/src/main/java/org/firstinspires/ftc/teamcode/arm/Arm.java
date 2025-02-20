@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.teamcode.arm.ArmConversions.*;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -29,12 +31,13 @@ public final class Arm {
     // State
     // ---------------------------------------------------------------------------------------------
 
-    Arm.State state;
+    State state;
     HomingState homingState;
     boolean rotationAlreadyHomed, extensionAlreadyHomed;
 
     double manualExtensionInput, manualRotationInput;
     int rotationPosition, rotationTargetPosition;
+    int extensionPosition, extensionTargetPosition;
     double rotationDegrees, rotationTargetDegrees;
     double horizontalInches, verticalInches;
     double horizontalTargetInches, verticalTargetInches;
@@ -45,6 +48,7 @@ public final class Arm {
     boolean atPosition;
     boolean debug;
     boolean extensionLimitSwitchWasPressed, frontRotationLimitSwitchWasPressed;
+    boolean autoHoming;
 
     // ---------------------------------------------------------------------------------------------
     // Other
@@ -68,7 +72,6 @@ public final class Arm {
         extensionLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
 
         intakeServo = hardwareMap.get(Servo.class, "intakeServo");
-        intakeServo.setDirection(Servo.Direction.REVERSE);
         intakeServo.setPosition(0.0);
 
         MotorUtility.setModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER,
@@ -82,12 +85,17 @@ public final class Arm {
         rotationAlreadyHomed = false;
         extensionAlreadyHomed = false;
         atPosition = false;
+        autoHoming = false;
         debug = false;
 
         rotationDegrees = 0.0;
         rotationTargetDegrees = 0.0;
         extensionInches = 0.0;
         extensionTargetInches = 0.0;
+        extensionPosition = 0;
+        extensionTargetPosition = 0;
+        rotationPosition = 0;
+        rotationTargetPosition = 0;
 
         manualExtensionInput = 0.0;
         manualRotationInput = 0.0;
@@ -103,12 +111,14 @@ public final class Arm {
         frontRotationLimitSwitchWasPressed = false;
     }
 
+    public void setAutoHoming() {
+        autoHoming = true;
+    }
+
     /**
      * Updates the state of the arm.
      */
     public void update() {
-        intakeServo.setPosition(intakePosition);
-
         updatePositionInformation();
 
         double rotationPower = 0.0;
@@ -119,6 +129,10 @@ public final class Arm {
                 home();
                 return;
             case POSITION:
+                rotationPower = rotationController.calculate(rotationPosition, rotationTargetPosition);
+                extensionPower =  extensionController.calculate(extensionPosition, extensionTargetPosition);
+
+                if (Math.abs(extensionTargetInches - extensionInches) < 0.4) extensionPower = 0.0;
                 break;
             case MANUAL:
                 rotationPower = manualRotationInput;
@@ -136,13 +150,7 @@ public final class Arm {
                 break;
         }
 
-        rotationPower = Math.max(-0.7, rotationPower);
-
-        if (frontRotationLimitSwitch.getState() && rotationPower < 0.0) {
-            rotationPower = 0.05;
-            rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            rotationMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
+        if (frontRotationLimitSwitch.getState() && rotationPower < 0.0) rotationPower = 0.0;
         if (backRotationLimitSwitch.getState() && rotationPower > 0.0) rotationPower = 0.0;
 
         boolean extensionLimitSwitchIsPressed = extensionLimitSwitch.getState();
@@ -157,11 +165,23 @@ public final class Arm {
         rotationMotor.setPower(rotationPower);
         leaderExtensionMotor.setPower(extensionPower);
         followerExtensionMotor.setPower(extensionPower);
+
+        if (Math.abs(extensionInches - extensionTargetInches) < 1.0 &&
+            Math.abs(rotationDegrees - rotationTargetDegrees) < 1.0) {
+            atPosition = true;
+        }
+    }
+
+    public void setExtensionPower(double power) {
+        leaderExtensionMotor.setPower(power);
+        followerExtensionMotor.setPower(power);
     }
 
     private void updatePositionInformation() {
-        extensionInches = extensionTicksToInches(leaderExtensionMotor.getCurrentPosition());
-        rotationDegrees = rotationTicksToDegrees(rotationMotor.getCurrentPosition());
+        rotationPosition = rotationMotor.getCurrentPosition();
+        extensionPosition = leaderExtensionMotor.getCurrentPosition();
+        extensionInches = extensionTicksToInches(extensionPosition);
+        rotationDegrees = rotationTicksToDegrees(rotationPosition);
         double[] cartesianCoordinates = polarToCartesian(extensionInches, rotationDegrees);
         horizontalInches = cartesianCoordinates[0];
         verticalInches = cartesianCoordinates[1];
@@ -196,15 +216,24 @@ public final class Arm {
                 }
                 break;
             case ROTATION:
-                if (rotationAlreadyHomed) {
-                    homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
-                    break;
-                }
-                rotationMotor.setPower(HOMING_ROTATION_POWER);
+                if (autoHoming) {
+                    rotationMotor.setPower(-HOMING_ROTATION_POWER);
 
-                if (frontRotationLimitSwitch.getState()) {
-                    homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
+                    if (backRotationLimitSwitch.getState()) {
+                        homingState = HomingState.COMPLETE;
+                    }
+                } else {
+                    if (rotationAlreadyHomed) {
+                        homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
+                        break;
+                    }
+                    rotationMotor.setPower(HOMING_ROTATION_POWER);
+
+                    if (frontRotationLimitSwitch.getState()) {
+                        homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
+                    }
                 }
+
                 break;
             case ROTATION_BACKLASH_REMOVAL:
                 rotationMotor.setPower(ROTATION_BACKLASH_REMOVAL_POWER);
@@ -228,6 +257,14 @@ public final class Arm {
         followerExtensionMotor.setPower(extension);
     }
 
+    public boolean atPosition() { return atPosition; }
+
+    public void stop() {
+        leaderExtensionMotor.setPower(0.0);
+        followerExtensionMotor.setPower(0.0);
+        rotationMotor.setPower(0.0);
+    }
+
     /**
      * Sets the position of the intake servo.
      * @param intakePosition The position to set the servo, must be between 0.0 and 1.0. The servo
@@ -238,7 +275,7 @@ public final class Arm {
     }
 
     /**
-     * Sets the arm state to {@link Arm.State#HOMING}.
+     * Sets the arm state to {@link State#HOMING}.
      */
     public void startHoming() { state = State.HOMING; }
 
@@ -260,37 +297,10 @@ public final class Arm {
      */
     public void setTargetPositionPolar(double inches, double degrees) {
         state = State.POSITION;
-        rotationTargetDegrees = Range.clip(degrees, MIN_ROT_DEG, MAX_ROT_DEG);
-        extensionTargetInches = Range.clip(inches, MIN_EXT_INCHES, MAX_EXT_INCHES);
-    }
-
-    /**
-     * Sets the target position of the arm relative to the center of rotation of the arm.
-     * @param horizontalTargetInches How many inches out to go.
-     * @param verticalTargetInches How many inches up to go.
-     */
-    public void setTargetPosition(double horizontalTargetInches, double verticalTargetInches) {
-        state = State.POSITION;
-        horizontalTargetInches
-                = Math.min(horizontalTargetInches, MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC);
-        double[] polarTargetPosition
-                = cartesianToPolar(horizontalTargetInches, verticalTargetInches);
-        extensionTargetInches = polarTargetPosition[0];
-        rotationTargetDegrees = polarTargetPosition[1];
-        this.horizontalTargetInches = horizontalTargetInches;
-        this.verticalTargetInches = verticalTargetInches;
-    }
-
-    /**
-     * Sets the target position of the arm, relative to the ground in front of the robot.
-     * @param horizontalInches How many inches out to go
-     * @param verticalInches How many inches up to go
-     */
-    public void setTargetPositionRobotCentric(double horizontalInches, double verticalInches) {
-        setTargetPosition(
-                horizontalInches + ROTATION_HORIZONTAL_OFFSET_INCHES,
-                verticalInches + ROTATION_VERTICAL_OFFSET_INCHES
-        );
+        rotationTargetDegrees = degrees;
+        extensionTargetInches = inches;
+        rotationTargetPosition = rotationDegreesToTicks(rotationTargetDegrees);
+        extensionTargetPosition = extensionInchesToTicks(extensionTargetInches);
     }
 
     public void positionDebug(@NonNull Telemetry telemetry) {
@@ -304,8 +314,12 @@ public final class Arm {
         telemetry.addData("Vertical Inches", verticalInches);
         telemetry.addData("Horizontal Target Inches", horizontalTargetInches);
         telemetry.addData("Vertical Target Inches", verticalTargetInches);
-        telemetry.addData("Extension Position", leaderExtensionMotor.getCurrentPosition());
-        telemetry.addData("Rotation Position", rotationMotor.getCurrentPosition());
+        telemetry.addData("Extension Position", extensionPosition);
+        telemetry.addData("Extension Target Position", extensionTargetPosition);
+        telemetry.addData("Rotation Position", rotationPosition);
+        telemetry.addData("Rotation Target Position", rotationTargetPosition);
+        telemetry.addData("Rotation Degrees", rotationDegrees);
+        telemetry.addData("Rotation Target Degrees", rotationTargetDegrees);
     }
 
     public void globalDebug(@NonNull Telemetry telemetry) {
