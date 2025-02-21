@@ -71,7 +71,7 @@ public final class ArmConstants {
     /**
      * The proportional value for the extension PID
      */
-    public static volatile double EXTENSION_KP = 0.0133;
+    public static volatile double EXTENSION_KP = 0.013;
     /**
      * The integral value for the extension PID. This is should always be here and is merely present for
      * completeness.
