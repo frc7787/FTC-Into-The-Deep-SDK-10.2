@@ -37,6 +37,14 @@ public class MeepMeepBucket {
                 .setTangent(Math.PI)
                 .splineToSplineHeading(new Pose2d(-8, -33, -Math.PI/2), -Math.PI/2)
                 .splineTo(new Vector2d(-48, -36), Math.PI/2)
+                .setTangent(-Math.PI/2)
+                .splineToSplineHeading(new Pose2d(-48, -48, -3*Math.PI/4), -3*Math.PI/4)
+                .setTangent(Math.PI/2)
+                .splineToSplineHeading(new Pose2d(-58, -36, Math.PI/2), Math.PI/2)
+                .setTangent(-Math.PI/2)
+                .splineToSplineHeading(new Pose2d(-48, -48, -3*Math.PI/4), -Math.PI/4)
+                .setTangent(Math.PI/2)
+                .splineToSplineHeading(new Pose2d(-60, -36, 11*Math.PI/16), 5*Math.PI/8)
 
 
                 .build());
