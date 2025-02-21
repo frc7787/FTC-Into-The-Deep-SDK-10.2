@@ -143,8 +143,7 @@ public final class Arm {
                     rotationPower = 0.0;
                 }
 
-                if (!rotationInputFresh) rotationPower = 0.0;
-                if (!extensionInputFresh) extensionPower = 0.0;
+
                 break;
             case MANUAL_TO_POSITION:
                 rotationPower = 0.0;
@@ -164,6 +163,9 @@ public final class Arm {
                         extensionPower = -1.0;
                     }
                 }
+
+                if (!rotationInputFresh) rotationPower = 0.0;
+                if (!extensionInputFresh) extensionPower = 0.0;
                 break;
         }
 
@@ -207,6 +209,10 @@ public final class Arm {
         verticalInches = cartesianCoordinates[1];
     }
 
+    public void setRotationPower(double power) {
+        rotationMotor.setPower(power);
+    }
+
     /**
      * Runs the arm homing sequence.
      */
@@ -240,6 +246,9 @@ public final class Arm {
                     rotationMotor.setPower(-HOMING_ROTATION_POWER);
 
                     if (backRotationLimitSwitch.getState()) {
+                        rotationMotor.setPower(0.0);
+                        rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        rotationMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                         homingState = HomingState.COMPLETE;
                     }
                 } else {

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.arm.Arm;
 
@@ -18,8 +19,6 @@ public final class HomeArmAction implements Action {
     @Override public boolean run(@NonNull TelemetryPacket telemetry) {
         arm.update();
 
-        boolean isFinished = arm.state() != Arm.State.HOMING;
-        if (isFinished) arm.stop();
-        return !isFinished;
+        return arm.state() == Arm.State.HOMING;
     }
 }

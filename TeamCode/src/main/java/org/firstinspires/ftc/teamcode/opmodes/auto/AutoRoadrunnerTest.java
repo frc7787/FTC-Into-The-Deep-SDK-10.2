@@ -11,15 +11,20 @@ import com.acmerobotics.roadrunner.Pose2dDual;
 import com.acmerobotics.roadrunner.PosePath;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.arm.Arm;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.teamcode.roadrunner.actions.HomeArmAction;
+import org.firstinspires.ftc.teamcode.roadrunner.actions.RetractArmAction;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -141,10 +146,28 @@ public class AutoRoadrunnerTest extends LinearOpMode {
 
                 .setTangent(-Math.PI/2)
                 .splineTo(new Vector2d(60, -53), 0, (pose2dDual, posePath, v) -> 80);
-
+        Arm arm = new Arm(hardwareMap);
+        arm.setAutoHoming();
         waitForStart();
 
-        Actions.runBlocking(startToBarAction.build());
+        Actions.runBlocking(
+                new SequentialAction(
+                        new HomeArmAction(arm),
+                        new ParallelAction(
+                                startToBarAction.build(),
+                                new SequentialAction(
+                                        new RetractArmAction(arm, 1.5, 1.0),
+                                        new SleepAction(0.3),
+                                        new RetractArmAction(arm, 0.8, -1)
+
+
+                                )
+                        )
+                )
+        );
+
+
+
 
     }
 
