@@ -49,6 +49,7 @@ public final class Arm {
     boolean debug;
     boolean extensionLimitSwitchWasPressed, frontRotationLimitSwitchWasPressed;
     boolean autoHoming;
+    boolean extensionInputFresh, rotationInputFresh;
 
     // ---------------------------------------------------------------------------------------------
     // Other
@@ -86,6 +87,8 @@ public final class Arm {
         extensionAlreadyHomed = false;
         atPosition = false;
         autoHoming = false;
+        extensionInputFresh = false;
+        rotationInputFresh = false;
         debug = false;
 
         rotationDegrees = 0.0;
@@ -132,13 +135,27 @@ public final class Arm {
                 rotationPower = rotationController.calculate(rotationPosition, rotationTargetPosition);
                 extensionPower =  extensionController.calculate(extensionPosition, extensionTargetPosition);
 
-                if (Math.abs(extensionTargetInches - extensionInches) < 0.4) extensionPower = 0.0;
+                if (Math.abs(extensionInches - extensionTargetInches) < 0.5) {
+                    extensionPower = 0.0;
+                }
+
+                if (Math.abs(rotationDegrees - rotationTargetDegrees) < 0.5) {
+                    rotationPower = 0.0;
+                }
+
+                if (!rotationInputFresh) rotationPower = 0.0;
+                if (!extensionInputFresh) extensionPower = 0.0;
+                break;
+            case MANUAL_TO_POSITION:
+                rotationPower = 0.0;
+                extensionPower = 0.0;
+                state = State.POSITION;
                 break;
             case MANUAL:
                 rotationPower = manualRotationInput;
                 extensionPower = manualExtensionInput;
 
-                if (horizontalInches >= MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC - 2.0) {
+                if (horizontalInches >= MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC + 7.0) {
                     if (extensionPower > 0.0) {
                         extensionPower = 0.0;
                     }
@@ -162,14 +179,17 @@ public final class Arm {
         }
         extensionLimitSwitchWasPressed = extensionLimitSwitchIsPressed;
 
-        rotationMotor.setPower(rotationPower);
-        leaderExtensionMotor.setPower(extensionPower);
-        followerExtensionMotor.setPower(extensionPower);
-
         if (Math.abs(extensionInches - extensionTargetInches) < 1.0 &&
             Math.abs(rotationDegrees - rotationTargetDegrees) < 1.0) {
             atPosition = true;
         }
+
+        rotationMotor.setPower(rotationPower);
+        leaderExtensionMotor.setPower(extensionPower);
+        followerExtensionMotor.setPower(extensionPower);
+
+        extensionInputFresh = false;
+        rotationInputFresh = false;
     }
 
     public void setExtensionPower(double power) {
@@ -285,9 +305,19 @@ public final class Arm {
      * @param extensionInput The power to give the extension motors
      */
     public void manualControl(double rotationInput, double extensionInput) {
-        state = State.MANUAL;
         this.manualRotationInput = rotationInput;
         this.manualExtensionInput = extensionInput;
+        if (rotationInput != 0.0) rotationInputFresh = true;
+        if (extensionInput != 0.0) extensionInputFresh = true;
+
+        if (rotationInputFresh || extensionInputFresh) state = State.MANUAL;
+    }
+
+    public void stopManualControl() {
+       if (state != State.MANUAL) return;
+       rotationMotor.setPower(0.0);
+       leaderExtensionMotor.setPower(0.0);
+       followerExtensionMotor.setPower(0.0);
     }
 
     /**
@@ -346,6 +376,7 @@ public final class Arm {
     public enum State {
         HOMING,
         POSITION,
+        MANUAL_TO_POSITION,
         MANUAL
     }
 

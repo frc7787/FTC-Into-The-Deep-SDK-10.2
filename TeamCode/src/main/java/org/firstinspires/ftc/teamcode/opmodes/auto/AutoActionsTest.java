@@ -19,8 +19,7 @@ public class AutoActionsTest extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        new HomeArmAction(arm),
-                        new RetractArmAction(arm, 1.0, 0.9)
+                        new HomeArmAction(arm)
                 )
         );
     }

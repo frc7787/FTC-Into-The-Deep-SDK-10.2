@@ -57,22 +57,24 @@ public final class Main extends OpMode {
                 double rotationInput = gamepad2.left_stick_y;
                 double extensionInput = -gamepad2.right_stick_y;
 
-                if (Math.abs(rotationInput) > 0.0 || Math.abs(extensionInput) > 0.0) {
-                    arm.manualControl(rotationInput, extensionInput);
-                } else if (gamepad2.triangle) {
-                    arm.setTargetPositionPolar(25.5, 93.0); // High bar
-                } else if (gamepad2.circle) {
-                    arm.setTargetPositionPolar(40.0, 60.0); // High bucket
-                } else if (gamepad2.square) {
-                    arm.setTargetPositionPolar(0.0, 89.5); // Wall Pickup
-                } else if (gamepad2.cross) {
-                    arm.setTargetPositionPolar(1.0, 5.0); // Sub
-                } else if (gamepad2.dpad_down) {
-                    arm.setTargetPositionPolar(0.0, -9.0); // Home
-                }
+                arm.manualControl(rotationInput, extensionInput);
+
+                    if (gamepad2.triangle) {
+                        arm.setTargetPositionPolar(25.5, 93.0); // High bar
+                    } else if (gamepad2.circle) {
+                        arm.setTargetPositionPolar(44.0, 80.0); // High bucket
+                    } else if (gamepad2.square) {
+                        arm.setTargetPositionPolar(0.0, 89.5); // Wall Pickup
+                    } else if (gamepad2.cross) {
+                        arm.setTargetPositionPolar(1.0, 5.0); // Sub
+                    } else if (gamepad2.dpad_down) {
+                        arm.setTargetPositionPolar(0.0, -9.0); // Home
+                    }
+
                 break;
         }
 
+        telemetry.addData("Left Stick Y", gamepad1.left_stick_y);
         telemetry.addData("State", state);
 
         mecanumDrive.fieldCentric(drive, strafe, turn);
