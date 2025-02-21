@@ -135,7 +135,7 @@ public final class Arm {
                 rotationPower = rotationController.calculate(rotationPosition, rotationTargetPosition);
                 extensionPower =  extensionController.calculate(extensionPosition, extensionTargetPosition);
 
-                if (Math.abs(extensionInches - extensionTargetInches) < 0.5) {
+                if (Math.abs(extensionInches - extensionTargetInches) < 0.7) {
                     extensionPower = 0.0;
                 }
 
@@ -143,13 +143,6 @@ public final class Arm {
                     rotationPower = 0.0;
                 }
 
-                if (!rotationInputFresh) rotationPower = 0.0;
-                if (!extensionInputFresh) extensionPower = 0.0;
-                break;
-            case MANUAL_TO_POSITION:
-                rotationPower = 0.0;
-                extensionPower = 0.0;
-                state = State.POSITION;
                 break;
             case MANUAL:
                 rotationPower = manualRotationInput;
@@ -164,6 +157,9 @@ public final class Arm {
                         extensionPower = -1.0;
                     }
                 }
+
+                if (!rotationInputFresh) rotationPower = 0.0;
+                if (!extensionInputFresh) extensionPower = 0.0;
                 break;
         }
 
@@ -376,7 +372,6 @@ public final class Arm {
     public enum State {
         HOMING,
         POSITION,
-        MANUAL_TO_POSITION,
         MANUAL
     }
 
