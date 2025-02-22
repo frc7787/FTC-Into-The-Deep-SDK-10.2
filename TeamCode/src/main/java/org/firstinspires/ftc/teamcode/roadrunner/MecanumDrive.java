@@ -101,6 +101,7 @@ public final class MecanumDrive {
 
         lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 CONTROL_HUB_LOGO_DIRECTION, CONTROL_HUB_USB_DIRECTION));
+        lazyImu.get().resetYaw();
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -143,7 +144,7 @@ public final class MecanumDrive {
 
     public void fieldCentric(double drive, double strafe, double turn) {
         double thetaRadians = StrictMath.atan2(drive, strafe);
-        thetaRadians += lazyImu.get().getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        thetaRadians -= lazyImu.get().getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
         double power = StrictMath.hypot(strafe, drive);
 

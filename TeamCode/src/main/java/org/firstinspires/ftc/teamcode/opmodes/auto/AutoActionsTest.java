@@ -22,12 +22,11 @@ public class AutoActionsTest extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         new HomeArmAction(arm),
+                        new MoveToPositionAction(arm, 26.0, -11.0, 2.0, telemetry),
                         new SleepAction(3.0),
-                        new MoveToPositionAction(arm, 26.0, -11.0, 4.0, telemetry),
-                        new SleepAction(3.0),
-                        new MoveToPositionAction(arm, 15.0, -11.0, 4.0, telemetry),
-                        new SleepAction(6.0),
-                        new MoveToPositionAction(arm, 0.3, -15.0, 5.0, telemetry)
+                        new MoveToPositionAction(arm, 15.0, -11.0, 2.0, telemetry)
+//                        new SleepAction(6.0),
+//                        new MoveToPositionAction(arm, 0.3, -15.0, 5.0, telemetry)
                 )
         );
     }

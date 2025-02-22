@@ -43,9 +43,9 @@ public final class Main extends OpMode {
         turn *= Math.abs(turn);
         turn *= 0.7;
 
-        if (gamepad2.left_bumper) {
-            arm.setIntakePosition(0.36);
-        } else if (gamepad2.right_bumper) {
+        if (gamepad2.right_bumper) {
+            arm.setIntakePosition(0.39);
+        } else if (gamepad2.left_bumper) {
             arm.setIntakePosition(0.08);
         }
 
@@ -60,9 +60,9 @@ public final class Main extends OpMode {
                 arm.manualControl(rotationInput, extensionInput);
 
                     if (gamepad2.triangle) {
-                        arm.setTargetPositionPolar(25.5, 93.0); // High bar
+                        arm.setTargetPositionPolar(25.5, 94.0); // High bar
                     } else if (gamepad2.circle) {
-                        arm.setTargetPositionPolar(46.0, 80.0); // High bucket
+                        arm.setTargetPositionPolar(48.0, 85.0); // High bucket
                     } else if (gamepad2.square) {
                         arm.setTargetPositionPolar(0.0, 89.5); // Wall Pickup
                     } else if (gamepad2.cross) {

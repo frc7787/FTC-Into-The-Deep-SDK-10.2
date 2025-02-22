@@ -286,7 +286,10 @@ public final class Arm {
         followerExtensionMotor.setPower(extension);
     }
 
-    public boolean atPosition() { return atPosition; }
+    public boolean atPosition() {
+        return Math.abs(extensionInches - extensionTargetInches) < 1.0 &&
+               Math.abs(rotationDegrees - rotationTargetDegrees) < 1.0;
+    }
 
     public void stop() {
         leaderExtensionMotor.setPower(0.0);
