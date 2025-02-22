@@ -77,8 +77,8 @@ public class Auto3Bar extends LinearOpMode {
 
 
         TrajectoryActionBuilder trajectory3 = trajectory2.endTrajectory().fresh()
-                .setTangent(0)
-                .splineToLinearHeading(new Pose2d(12, -31, -Math.PI/1.999), 0)
+                .setTangent(-Math.PI/2)
+                .splineToLinearHeading(new Pose2d(12, -38, -Math.PI/1.999), 0)
                 .setTangent(0)
                 .splineToSplineHeading(new Pose2d(40, -50, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
@@ -129,8 +129,8 @@ public class Auto3Bar extends LinearOpMode {
                               trajectory2.build(),
                               new SequentialAction(
                                       new SleepAction(8),
-                                      new MoveToPositionAction(arm, -1, -15.2, 0.75, telemetry),
-                                      new SleepAction(2),
+                                      new MoveToPositionAction(arm, -1, -15.2, 2, telemetry),
+                                      new SleepAction(0.75),
                                       new MoveToPositionAction(arm, 24.0, -6.5, 1.5, telemetry)
                               )
 
@@ -140,8 +140,8 @@ public class Auto3Bar extends LinearOpMode {
                               trajectory3.build(),
                               new SequentialAction(
                                       new SleepAction(1.75),
-                                      new MoveToPositionAction(arm, -2, -15.2, 0.75, telemetry),
-                                      new SleepAction(1.7),
+                                      new MoveToPositionAction(arm, -2, -15.2, 2, telemetry),
+                                      new SleepAction(0.55),
                                       new MoveToPositionAction(arm, 24, -6.5, 1.5, telemetry)
                               )
                       ),
