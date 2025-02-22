@@ -143,7 +143,6 @@ public final class Arm {
                     rotationPower = 0.0;
                 }
 
-
                 break;
             case MANUAL_TO_POSITION:
                 rotationPower = 0.0;
@@ -237,6 +236,8 @@ public final class Arm {
                     leaderExtensionMotor.setPower(0.0);
                     followerExtensionMotor.setPower(0.0);
                     leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    followerExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    leaderExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     followerExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     homingState = HomingState.ROTATION;
                 }

@@ -62,7 +62,7 @@ public final class Main extends OpMode {
                     if (gamepad2.triangle) {
                         arm.setTargetPositionPolar(25.5, 94.0); // High bar
                     } else if (gamepad2.circle) {
-                        arm.setTargetPositionPolar(48.0, 85.0); // High bucket
+                        arm.setTargetPositionPolar(40.0, 85.0); // High bucket
                     } else if (gamepad2.square) {
                         arm.setTargetPositionPolar(0.0, 89.5); // Wall Pickup
                     } else if (gamepad2.cross) {
