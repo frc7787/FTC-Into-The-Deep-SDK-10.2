@@ -18,6 +18,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.arm.Arm;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.actions.HomeArmAction;
+import org.firstinspires.ftc.teamcode.roadrunner.actions.MoveToPositionAction;
 import org.firstinspires.ftc.teamcode.roadrunner.actions.RetractArmAction;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,10 +33,21 @@ public class Auto4Bar extends LinearOpMode {
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
+        Arm arm = new Arm(hardwareMap);
+        arm.setAutoHoming();
+        Actions.runBlocking(
+                new SequentialAction(
+                        new HomeArmAction(arm),
+                        new MoveToPositionAction(arm, 0, -50, 2.5, telemetry)
+                )
+        );
+
         TrajectoryActionBuilder startToBarAction = drive.actionBuilder(initialPose)
+                .afterTime(0.01, new MoveToPositionAction(arm, 24.0, -6.5, 1.5, telemetry))
                 .setTangent(Math.PI/2)
                 .splineToLinearHeading(new Pose2d(-4, -30, -Math.PI/2), Math.PI/2)
                 .setTangent(Math.PI/2)
+                .afterTime(0.4, new MoveToPositionAction(arm, -10, 6.5, 1.0, telemetry))
                 .splineToLinearHeading(new Pose2d(0, -28, -Math.PI / 2), 0, new VelConstraint() {
                     @Override
                     public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
@@ -44,7 +56,7 @@ public class Auto4Bar extends LinearOpMode {
                 })
                 .setTangent(0)
                 .splineToSplineHeading(new Pose2d(8, -33, -Math.PI/2), -Math.PI/2)
-
+                .afterTime(0.1, new MoveToPositionAction(arm, -1, -15.2, 0.75, telemetry))
                 //splined away from bar
                 .setTangent(-Math.PI/2)
                 .splineTo(new Vector2d(35, -30), Math.PI/2)
@@ -53,90 +65,58 @@ public class Auto4Bar extends LinearOpMode {
                 .setTangent(0)
                 .splineToLinearHeading(new Pose2d(48, -24, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .splineToSplineHeading(new Pose2d(43, -53, Math.PI/2), Math.PI)
-                .setTangent(Math.PI)
-                .splineToLinearHeading(new Pose2d(48, -14, Math.PI/2), 0)
+                .splineToSplineHeading(new Pose2d(43, -53, Math.PI/2), -Math.PI/2)
 
-
-                .setTangent(0)
-                .splineToSplineHeading(new Pose2d(56, -24, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .splineToSplineHeading(new Pose2d(49, -53, Math.PI/2), Math.PI)
-                .setTangent(Math.PI)
-                .splineToSplineHeading(new Pose2d(54, -14, Math.PI/2), 0)
-
-                .setTangent(0)
-                .splineToSplineHeading(new Pose2d(62.75, -24, Math.PI/2), -Math.PI/2)
+                .splineToSplineHeading(new Pose2d(48, -28, 3*Math.PI/5), -Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .splineToLinearHeading(new Pose2d(56, -55, Math.PI/2), -Math.PI/2)
+                .splineToLinearHeading(new Pose2d(43, -55, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
                 .splineToLinearHeading(new Pose2d(56, -63, Math.PI / 2), Math.PI / 2, (pose2dDual, posePath, v) -> 20)
+                .afterTime(0.1, new MoveToPositionAction(arm, 24.0, -6.5, 1.5, telemetry))
                 .splineToSplineHeading(new Pose2d(-4, -26, -Math.PI/1.999), Math.PI/2)
 //                .splineToLinearHeading(new Pose2d(-1, -30, -Math.PI/1.999), 0)
 //                .setTangent(0)
 //                .splineToLinearHeading(new Pose2d(-4, -26, -Math.PI/1.999), 0)
                 .setTangent(Math.PI/2)
+                .afterTime(0.4, new MoveToPositionAction(arm, -10, 6.5, 1.0, telemetry))
                 .splineToLinearHeading(new Pose2d(0, -24.5, -Math.PI / 1.999), 0, (pose2dDual, posePath, v) -> 10)
                 .setTangent(0)
                 .splineToLinearHeading(new Pose2d(12, -31, -Math.PI/1.999), 0)
+                .afterTime(0.1, new MoveToPositionAction(arm, -1, -15.2, 0.75, telemetry))
                 .setTangent(0)
                 .splineToSplineHeading(new Pose2d(40, -55, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .splineToLinearHeading(new Pose2d(40, -63, Math.PI / 2), Math.PI / 2, new VelConstraint() {
-                    @Override
-                    public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
-                        return 20;
-                    }
-                })
-
-
-                .splineToSplineHeading(new Pose2d(-4, -26.5, -Math.PI/1.999), Math.PI/2)
-//                .splineToLinearHeading(new Pose2d(-1, -30, -Math.PI/1.999), 0)
-//                .setTangent(0)
-//                .splineToLinearHeading(new Pose2d(-4, -26, -Math.PI/1.999), 0)
-                .setTangent(Math.PI/2)
-                .splineToLinearHeading(new Pose2d(0, -24, -Math.PI / 1.999), 0, (pose2dDual, posePath, v) -> 10)
-                .setTangent(0)
-                .splineToLinearHeading(new Pose2d(12, -33, -Math.PI/1.999), 0)
-                .setTangent(0)
-                .splineToSplineHeading(new Pose2d(40, -55, Math.PI/2), -Math.PI/2)
-                .setTangent(-Math.PI/2)
+                .afterTime(0.7, new MoveToPositionAction(arm, 24.0, -6.5, 1.5, telemetry))
                 .splineToLinearHeading(new Pose2d(40, -62, Math.PI / 2), Math.PI / 2, new VelConstraint() {
                     @Override
                     public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
-                        return 20;
+                        return 15;
                     }
                 })
 
 
                 .splineToSplineHeading(new Pose2d(-2, -25, -Math.PI/1.999), Math.PI/2)
-//
+
+                .afterTime(0.4, new MoveToPositionAction(arm, -10, 6.5, 1.0, telemetry))
                 .setTangent(Math.PI/2)
                 .splineToLinearHeading(new Pose2d(2, -22.5, -Math.PI / 1.999), 0, (pose2dDual, posePath, v) -> 10)
 
                 .setTangent(0)
                 .splineToSplineHeading(new Pose2d(9, -33, -Math.PI/1.999), -Math.PI/2)
 
-
+                .afterTime(0.1, new MoveToPositionAction(arm, -1, -15.2, 0.75, telemetry))
                 .setTangent(-Math.PI/2)
                 .splineTo(new Vector2d(60, -53), 0, (pose2dDual, posePath, v) -> 80);
-        Arm arm = new Arm(hardwareMap);
-        arm.setAutoHoming();
+
+
         waitForStart();
+
+
 
         Actions.runBlocking(
                 new SequentialAction(
-                        new HomeArmAction(arm),
-                        new ParallelAction(
-                                startToBarAction.build(),
-                                new SequentialAction(
-                                        new RetractArmAction(arm, 1.5, 1.0),
-                                        new SleepAction(0.3),
-                                        new RetractArmAction(arm, 0.8, -1)
-
-
-                                )
-                        )
+                        startToBarAction.build()
                 )
         );
 
