@@ -153,12 +153,12 @@ public final class Arm {
                 rotationPower = manualRotationInput;
                 extensionPower = manualExtensionInput;
 
-                if (horizontalInches >= MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC + 7.0) {
+                if (horizontalInches >= MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC + 3.0) {
                     if (extensionPower > 0.0) {
                         extensionPower = 0.0;
                     }
                     if (rotationPower < 0.0) {
-                        rotationPower /= 2.0;
+                        rotationPower = 0.0;
                         extensionPower = -1.0;
                     }
                 }

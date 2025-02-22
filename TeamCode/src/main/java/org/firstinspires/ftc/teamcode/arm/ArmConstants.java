@@ -92,7 +92,7 @@ public final class ArmConstants {
     /**
      * The minimum extension distance between the center of rotation and the end of the arm.
      */
-    public static volatile double MIN_EXT_INCHES = 17.0;
+    public static volatile double MIN_EXT_INCHES = 15.5;
     /**
      * The maximum extension distance between the center of rotation and the end of the arm.
      */
