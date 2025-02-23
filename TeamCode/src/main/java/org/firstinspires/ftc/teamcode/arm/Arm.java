@@ -73,7 +73,7 @@ public final class Arm {
         extensionLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
 
         intakeServo = hardwareMap.get(Servo.class, "intakeServo");
-        intakeServo.setPosition(0.0);
+        intakeServo.setPosition(0.36);
 
         MotorUtility.setModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER,
                 rotationMotor,

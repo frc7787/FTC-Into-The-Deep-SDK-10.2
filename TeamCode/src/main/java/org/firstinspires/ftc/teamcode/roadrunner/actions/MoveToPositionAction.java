@@ -44,7 +44,11 @@ public class MoveToPositionAction implements Action {
         boolean isFinished = arm.atPosition() || timer.seconds() > seconds;
 
         telemetry.put("Is Finished", isFinished);
-        if (isFinished) arm.stop();
+        if (isFinished) {
+            arm.stop();
+            opModeTelemetry.clearAll();
+            opModeTelemetry.update();
+        }
         return !isFinished;
     }
 }

@@ -4,13 +4,14 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.arm.Arm;
 import org.firstinspires.ftc.teamcode.roadrunner.actions.HomeArmAction;
 import org.firstinspires.ftc.teamcode.roadrunner.actions.MoveToPositionAction;
-import org.firstinspires.ftc.teamcode.roadrunner.actions.RetractArmAction;
 
+@Disabled
 @Autonomous(group = "Test")
 public class AutoActionsTest extends LinearOpMode {
 

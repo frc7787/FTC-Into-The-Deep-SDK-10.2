@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
-import androidx.annotation.NonNull;
-
-import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Arclength;
-import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Pose2dDual;
 import com.acmerobotics.roadrunner.PosePath;
-import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -17,8 +12,8 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.arm.Arm;
@@ -27,8 +22,8 @@ import org.firstinspires.ftc.teamcode.roadrunner.actions.HomeArmAction;
 import org.firstinspires.ftc.teamcode.roadrunner.actions.RetractArmAction;
 import org.jetbrains.annotations.NotNull;
 
-
-@Autonomous
+@Disabled
+@Autonomous(group = "Test")
 public class AutoRoadrunnerTest extends LinearOpMode {
     private final Pose2d initialPose = new Pose2d(8, -62, -Math.PI / 2);
 

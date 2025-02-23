@@ -64,6 +64,7 @@ public class MeepMeepTesting {
                 .setTangent(-Math.PI/2)
                 .splineToLinearHeading(new Pose2d(56, -55, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
+                        .waitSeconds(1)
                 .splineToLinearHeading(new Pose2d(56, -62, Math.PI / 2), Math.PI / 2, (pose2dDual, posePath, v) -> 20)
                 .splineToSplineHeading(new Pose2d(-4, -32, -Math.PI/1.999), Math.PI/2)
 //                .splineToLinearHeading(new Pose2d(-1, -30, -Math.PI/1.999), 0)

@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp
-public class HangServoTest extends OpMode {
+@TeleOp(group = "Test")
+public final class HangTest extends OpMode {
     private Servo backLeftHang, backRightHang, frontHang;
     private Gamepad previousGamepad, currentGamepad;
     private double position;
@@ -15,12 +15,17 @@ public class HangServoTest extends OpMode {
 
     @Override public void init() {
         backLeftHang = hardwareMap.get(Servo.class, "backLeftHang");
+        backLeftHang.setDirection(Servo.Direction.REVERSE);
         backRightHang = hardwareMap.get(Servo.class, "backRightHang");
+        backRightHang.setDirection(Servo.Direction.REVERSE);
         frontHang = hardwareMap.get(Servo.class, "frontHang");
+        frontHang.setDirection(Servo.Direction.REVERSE);
         backLeftHang.setPosition(0.0);
         backRightHang.setPosition(0.0);
         frontHang.setPosition(0.0);
         hangMotor = hardwareMap.get(DcMotor.class, "hangMotor");
+        previousGamepad = new Gamepad();
+        currentGamepad = new Gamepad();
     }
 
     @Override public void loop() {
@@ -33,6 +38,12 @@ public class HangServoTest extends OpMode {
         }
         if (currentGamepad.dpad_down && !previousGamepad.dpad_down) {
             position -= 0.01;
+        }
+
+        if (currentGamepad.left_bumper) {
+            position = 0.85;
+        } else if (currentGamepad.right_bumper) {
+            position = 1.0;
         }
 
         telemetry.addData("Position", position);
