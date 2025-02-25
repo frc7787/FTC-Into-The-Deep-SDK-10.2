@@ -44,6 +44,8 @@ public class Auto4Bar extends LinearOpMode {
         boolean init = false;
 
         while (opModeInInit()) {
+            if (isStopRequested()) return;
+
             if (!(arm.state() == Arm.State.HOMING)) {
                 if (!init) {
                     init = true;
@@ -63,7 +65,7 @@ public class Auto4Bar extends LinearOpMode {
         }
 
         TrajectoryActionBuilder startToBarAction = drive.actionBuilder(initialPose)
-                .afterTime(0.01, new MoveToPositionAction(arm, 24.0, -6.5, 1.5, telemetry))
+                .afterTime(0.01, new MoveToPositionAction(arm, 24.0, -6.4, 1.5, telemetry))
                 .setTangent(Math.PI/2)
                 .splineToLinearHeading(new Pose2d(2, -28, -Math.PI/2), Math.PI/2)
                 .setTangent(Math.PI/2)
@@ -87,15 +89,15 @@ public class Auto4Bar extends LinearOpMode {
                 .setTangent(-Math.PI/2)
                 .splineToLinearHeading(new Pose2d(47, -47, Math.PI/2), Math.PI/2)
                 .setTangent(Math.PI/2)
-                .splineToLinearHeading(new Pose2d(51, -14, Math.PI / 2), Math.PI / 2, (pose2dDual, posePath, v) -> 38)
+                .splineToLinearHeading(new Pose2d(49, -14, Math.PI / 2), Math.PI / 2, (pose2dDual, posePath, v) -> 38)
                 .setTangent(Math.PI/2)
-                .splineToLinearHeading(new Pose2d(58, -10, Math.PI/2), 0)
+                .splineToLinearHeading(new Pose2d(55, -10, Math.PI/2), 0)
                 .setTangent(0)
-                .splineToLinearHeading(new Pose2d(58, -38, Math.PI/2), -Math.PI/2, (pose2dDual, posePath, v) -> 38)
+                .splineToLinearHeading(new Pose2d(55, -38, Math.PI/2), -Math.PI/2, (pose2dDual, posePath, v) -> 38)
                 .setTangent(-Math.PI/2)
                 .splineToLinearHeading(new Pose2d(43, -55, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .afterTime(0.9, new MoveToPositionAction(arm, 24.0, -6.5, 1.5, telemetry))
+                .afterTime(0.9, new MoveToPositionAction(arm, 24.0, -6.4, 1.5, telemetry))
                 .splineToLinearHeading(new Pose2d(43, -63.5, Math.PI / 2), Math.PI / 2, (pose2dDual, posePath, v) -> 10)
 
                 .splineToSplineHeading(new Pose2d(-2, -26, -Math.PI/1.999), Math.PI/2)
@@ -103,7 +105,7 @@ public class Auto4Bar extends LinearOpMode {
 //                .setTangent(0)
 //                .splineToLinearHeading(new Pose2d(-4, -26, -Math.PI/1.999), 0)
                 .setTangent(Math.PI/2)
-                .afterTime(0.3, new MoveToPositionAction(arm, 10, -6.5, 1.0, telemetry))
+                .afterTime(0.3, new MoveToPositionAction(arm, 10, -6.4, 1.0, telemetry))
                 .splineToLinearHeading(new Pose2d(2, -24.5, -Math.PI / 1.999), 0, (pose2dDual, posePath, v) -> 10)
                 .setTangent(0)
                 .splineToLinearHeading(new Pose2d(12, -31, -Math.PI/1.999), 0)
@@ -111,7 +113,7 @@ public class Auto4Bar extends LinearOpMode {
                 .setTangent(0)
                 .splineToSplineHeading(new Pose2d(40, -55, Math.PI/2), -Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .afterTime(0.8, new MoveToPositionAction(arm, 24.0, -6.5, 1.5, telemetry))
+                .afterTime(0.8, new MoveToPositionAction(arm, 24.0, -6.4, 1.5, telemetry))
                 .splineToLinearHeading(new Pose2d(40, -63, Math.PI / 2), Math.PI / 2, new VelConstraint() {
                     @Override
                     public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
@@ -157,18 +159,10 @@ public class Auto4Bar extends LinearOpMode {
 
         waitForStart();
 
-
-
         Actions.runBlocking(
                 new SequentialAction(
                         startToBarAction.build()
                 )
         );
-
-
-
-
     }
-
-
 }

@@ -5,6 +5,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.arm.Arm;
 import org.firstinspires.ftc.teamcode.arm.ArmDebug;
@@ -17,6 +18,7 @@ public final class Main extends OpMode {
     private MecanumDrive mecanumDrive;
     private TeleOpState state;
     private Gamepad currentGamepad1, previousGamepad1;
+    private Servo backLeft, backRight;
 
     @Override public void init() {
         arm = new Arm(hardwareMap);
@@ -25,6 +27,8 @@ public final class Main extends OpMode {
         state = TeleOpState.HOMING;
         currentGamepad1 = new Gamepad();
         previousGamepad1 = new Gamepad();
+        backLeft = hardwareMap.get(Servo.class, "backLeftHang");
+        backRight = hardwareMap.get(Servo.class, "backRightHang");
     }
 
     @Override public void loop() {
@@ -72,6 +76,14 @@ public final class Main extends OpMode {
                     }
 
                 break;
+        }
+
+        if (gamepad2.options) {
+            backLeft.setPosition(0.7);
+            backRight.setPosition(0.7);
+        } else if (gamepad2.share) {
+            backLeft.setPosition(0.0);
+            backRight.setPosition(0.0);
         }
 
         telemetry.addData("Left Stick Y", gamepad1.left_stick_y);

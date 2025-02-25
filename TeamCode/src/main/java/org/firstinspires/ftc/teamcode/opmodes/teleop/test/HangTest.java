@@ -15,11 +15,8 @@ public final class HangTest extends OpMode {
 
     @Override public void init() {
         backLeftHang = hardwareMap.get(Servo.class, "backLeftHang");
-        backLeftHang.setDirection(Servo.Direction.REVERSE);
         backRightHang = hardwareMap.get(Servo.class, "backRightHang");
-        backRightHang.setDirection(Servo.Direction.REVERSE);
         frontHang = hardwareMap.get(Servo.class, "frontHang");
-        frontHang.setDirection(Servo.Direction.REVERSE);
         backLeftHang.setPosition(0.0);
         backRightHang.setPosition(0.0);
         frontHang.setPosition(0.0);

@@ -139,7 +139,7 @@ public final class ArmConstants {
     /**
      * The starting angle of the arm, in degrees.
      */
-    public static volatile double ROTATION_STARTING_ANGLE = -10.0;
+    public static volatile double ROTATION_STARTING_ANGLE = -18.0;
     /**
      * The amount of ticks per degree of rotation of the arm
      */

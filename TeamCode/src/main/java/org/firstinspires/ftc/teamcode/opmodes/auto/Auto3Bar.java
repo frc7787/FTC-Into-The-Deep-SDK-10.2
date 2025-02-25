@@ -126,8 +126,8 @@ public class Auto3Bar extends LinearOpMode {
                               trajectory2.build(),
                               new SequentialAction(
                                       new SleepAction(8),
-                                      new MoveToPositionAction(arm, -4, -15.2, 1, telemetry),
-                                      new SleepAction(1.75),
+                                      new MoveToPositionAction(arm, -4, -15.5, 2, telemetry),
+                                      new SleepAction(0.75),
                                       new MoveToPositionAction(arm, 24.5, -6.4, 1.5, telemetry)
                               )
 
@@ -137,7 +137,7 @@ public class Auto3Bar extends LinearOpMode {
                               trajectory3.build(),
                               new SequentialAction(
                                       new SleepAction(1.75),
-                                      new MoveToPositionAction(arm, -4, -15.2, 2, telemetry),
+                                      new MoveToPositionAction(arm, -4, -15.5, 2, telemetry),
                                       new SleepAction(0.55),
                                       new MoveToPositionAction(arm, 24.5, -6.4, 1.5, telemetry)
                               )

@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode.opmodes.teleop.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -6,61 +7,126 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorImplEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
-@TeleOp(group = "Tuning")
+@TeleOp(group = "Test")
 @Config
-public class ExtensionPIDTuning extends OpMode {
-    private DcMotorImplEx leaderExtensionMotor, followerExtensionMotor;
-    private FtcDashboard ftcDashboard;
+public final class ExtensionPIDTuning extends OpMode {
+    // ---------------------------------------------------------------------------------------------
+    // Configuration values (To be edited by dashboard)
 
-    public static double TARGET_POSITION = 0.0;
-    public static double P = 0.0;
-    public static double I = 0.0;
-    public static double D = 0.0;
-    public static double POSITIVE_STATIC = 0.0;
-    public static double NEGATIVE_STATIC = 0.0;
-    public static double TOLERANCE = 0.0;
-    public static boolean DISABLED = true;
+    public static volatile double KP = 0.0;
+    public static volatile double KI = 0.0;
+    public static volatile double KD = 0.0;
+    public static volatile int TOLERANCE = 0;
+    public static volatile int TARGET = 0;
 
-    private double extensionPosition;
+    // ---------------------------------------------------------------------------------------------
 
+
+    // ---------------------------------------------------------------------------------------------
+    // Global State
+
+    private boolean disabled = true;
+    private ExtensionPIDTuning.State state;
+
+    // ---------------------------------------------------------------------------------------------
+
+
+    // ---------------------------------------------------------------------------------------------
+    // Hardware
+
+    private DcMotor leaderExtensionMotor, followerExtensionMotor;
+    private Gamepad currentGamepad, previousGamepad;
+
+    // ---------------------------------------------------------------------------------------------
+
+    private FtcDashboard dashboard;
     private PIDController extensionController;
 
     @Override public void init() {
-        leaderExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "extensionMotorOne");
-        leaderExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        extensionController = new PIDController(KP, KI, KD);
+        extensionController.setTolerance(TOLERANCE);
+
+        leaderExtensionMotor = hardwareMap.get(DcMotor.class, "leaderExtensionMotor");
         leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leaderExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        followerExtensionMotor = hardwareMap.get(DcMotorImplEx.class, "extensionMotorTwo");
-        followerExtensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionController = new PIDController(P, I, D, POSITIVE_STATIC, NEGATIVE_STATIC);
-        extensionController.setTolerance(TOLERANCE);
-        extensionPosition = 0.0;
-        ftcDashboard = FtcDashboard.getInstance();
+        leaderExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        followerExtensionMotor = hardwareMap.get(DcMotor.class, "followerExtensionMotor");
+        followerExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        followerExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        previousGamepad = new Gamepad();
+        currentGamepad = new Gamepad();
+
+        state = State.PID;
+        dashboard = FtcDashboard.getInstance();
     }
 
     @Override public void loop() {
-        extensionController.debugSetCoefficients(P, I, D, POSITIVE_STATIC, NEGATIVE_STATIC);
-        extensionPosition = leaderExtensionMotor.getCurrentPosition();
-        double power = extensionController.calculate(extensionPosition, TARGET_POSITION);
+        previousGamepad.copy(currentGamepad);
+        currentGamepad.copy(gamepad1);
 
-        TelemetryPacket telemetryPacket = new TelemetryPacket();
-        telemetryPacket.put("Target Position", TARGET_POSITION);
-        telemetryPacket.put("Position", extensionPosition);
-        telemetryPacket.put("Error", Math.abs(extensionPosition - TARGET_POSITION));
-        telemetryPacket.put("Extension Power", power);
-        ftcDashboard.sendTelemetryPacket(telemetryPacket);
+        extensionController.setCoefficients(KP, KI, KD);
+        extensionController.setTolerance(TOLERANCE);
 
-        if (!DISABLED) {
-            leaderExtensionMotor.setPower(power);
-            followerExtensionMotor.setPower(power);
-        } else {
-            leaderExtensionMotor.setPower(0.0);
-            followerExtensionMotor.setPower(0.0);
+        double leftStickY = -gamepad1.left_stick_y;
+
+        int position = leaderExtensionMotor.getCurrentPosition();
+        double power = 0.0;
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("Position", position);
+
+        switch (state) {
+            case PID:
+                telemetry.addLine("Control the extension manually with left stick y");
+                telemetry.addLine("Press triangle to toggle enabled/disabled");
+
+                if (Math.abs(leftStickY) > 0.05) state = State.MANUAL;
+
+                if (currentGamepad.triangle && !previousGamepad.triangle) {
+                    disabled = !disabled;
+                }
+
+                power = extensionController.calculate(position, TARGET);
+                if (disabled) power = 0.0;
+
+                int error = TARGET - position;
+
+                packet.put("Target", TARGET);
+                packet.put("Position", position);
+                packet.put("Error", error);
+
+                break;
+            case MANUAL:
+                telemetry.addLine("Control extension with left stick y");
+                telemetry.addLine("Press circle to reset position");
+                telemetry.addLine("Press square to move back to position");
+
+                power = -leftStickY;
+
+                if (currentGamepad.circle) {
+                    leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    leaderExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
+
+                if (currentGamepad.square) state = State.PID;
+
+                break;
         }
+
+        leaderExtensionMotor.setPower(power);
+        followerExtensionMotor.setPower(power);
+
+        packet.put("Power", power);
+        dashboard.sendTelemetryPacket(packet);
+    }
+
+    private enum State {
+        PID,
+        MANUAL
     }
 }
