@@ -1,11 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.Localizer;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.pedropathing.constants.LocalizerConstants;
+import org.firstinspires.ftc.pedropathing.constants.PathFollowingConstants;
 import org.firstinspires.ftc.teamcode.arm.Arm;
 import org.firstinspires.ftc.teamcode.arm.ArmDebug;
 
@@ -15,6 +21,7 @@ public final class Main extends OpMode {
     private ArmDebug armDebug;
     private TeleOpState state;
     private Gamepad currentGamepad1, previousGamepad1;
+    private Follower mecanumDrive;
     private Servo backLeft, backRight;
 
     @Override public void init() {
@@ -25,6 +32,9 @@ public final class Main extends OpMode {
         previousGamepad1 = new Gamepad();
         backLeft = hardwareMap.get(Servo.class, "backLeftHang");
         backRight = hardwareMap.get(Servo.class, "backRightHang");
+        Constants.setConstants(PathFollowingConstants.class, LocalizerConstants.class);
+        mecanumDrive = new Follower(hardwareMap);
+        mecanumDrive.setStartingPose(new Pose(0.0, 0.0, 0.0));
     }
 
     @Override public void loop() {
@@ -38,6 +48,8 @@ public final class Main extends OpMode {
         double turn = gamepad1.right_stick_x;
         turn *= Math.abs(turn);
         turn *= 0.7;
+
+        mecanumDrive.setTeleOpMovementVectors(drive, strafe, turn, false);
 
         if (gamepad2.right_bumper) {
             arm.setIntakePosition(0.39);
