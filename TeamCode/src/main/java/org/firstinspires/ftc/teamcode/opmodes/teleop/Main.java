@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -9,13 +8,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.arm.Arm;
 import org.firstinspires.ftc.teamcode.arm.ArmDebug;
-import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 @TeleOp(group = "$")
 public final class Main extends OpMode {
     private Arm arm;
     private ArmDebug armDebug;
-    private MecanumDrive mecanumDrive;
     private TeleOpState state;
     private Gamepad currentGamepad1, previousGamepad1;
     private Servo backLeft, backRight;
@@ -23,7 +20,6 @@ public final class Main extends OpMode {
     @Override public void init() {
         arm = new Arm(hardwareMap);
         armDebug = new ArmDebug(arm, FtcDashboard.getInstance());
-        mecanumDrive = new MecanumDrive(hardwareMap, new Pose2d(0.0, 0.0, 0.0));
         state = TeleOpState.HOMING;
         currentGamepad1 = new Gamepad();
         previousGamepad1 = new Gamepad();
@@ -34,10 +30,6 @@ public final class Main extends OpMode {
     @Override public void loop() {
         previousGamepad1.copy(currentGamepad1);
         currentGamepad1.copy(gamepad1);
-
-        if (gamepad1.options) {
-            mecanumDrive.resetIMU();
-        }
 
         double drive = -gamepad1.left_stick_y;
         drive *= Math.abs(drive);
@@ -89,7 +81,6 @@ public final class Main extends OpMode {
         telemetry.addData("Left Stick Y", gamepad1.left_stick_y);
         telemetry.addData("State", state);
 
-        mecanumDrive.fieldCentric(drive, strafe, turn);
         arm.update();
         arm.globalDebug(telemetry);
         arm.positionDebug(telemetry);
