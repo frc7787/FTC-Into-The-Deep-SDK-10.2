@@ -25,7 +25,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.Arrays;
 import java.util.List;
 
-@TeleOp(name = "Motor Directions", group = "Teleop Test")
+@TeleOp(group = "Test")
 public class MotorDirections extends OpMode {
     private Telemetry telemetryA;
 

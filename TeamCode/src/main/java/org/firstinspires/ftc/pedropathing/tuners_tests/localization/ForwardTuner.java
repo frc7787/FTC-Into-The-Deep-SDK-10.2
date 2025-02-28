@@ -28,7 +28,7 @@ import com.pedropathing.util.Drawing;
  * @version 1.0, 5/6/2024
  */
 @Config
-@Autonomous(name = "Forward Localizer Tuner", group = ".Localization")
+@Autonomous(group = "Localization")
 public class ForwardTuner extends OpMode {
     private PoseUpdater poseUpdater;
     private DashboardPoseTracker dashboardPoseTracker;

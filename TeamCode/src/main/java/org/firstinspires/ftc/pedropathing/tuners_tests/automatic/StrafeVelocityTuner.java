@@ -47,22 +47,23 @@ import java.util.List;
  * @version 1.0, 3/13/2024
  */
 @Config
-@Autonomous(name = "Strafe Velocity Tuner", group = "Automatic Tuners")
+@Autonomous(group = "Automatic Tuners")
 public class StrafeVelocityTuner extends OpMode {
-    private ArrayList<Double> velocities = new ArrayList<>();
+    private final ArrayList<Double> velocities = new ArrayList<>();
 
-    private DcMotorEx leftFront;
-    private DcMotorEx leftRear;
-    private DcMotorEx rightFront;
-    private DcMotorEx rightRear;
+    private DcMotorEx leftFront,
+                      leftRear,
+                      rightFront,
+                      rightRear;
+
     private List<DcMotorEx> motors;
 
     private PoseUpdater poseUpdater;
 
-    public static double DISTANCE = 48;
-    public static double RECORD_NUMBER = 10;
+    public static volatile double DISTANCE = 48;
+    public static volatile double RECORD_NUMBER = 10;
 
-    private Telemetry telemetryA;
+    private Telemetry multipleTelemetry;
 
     private boolean end;
 
@@ -100,12 +101,12 @@ public class StrafeVelocityTuner extends OpMode {
             velocities.add(0.0);
         }
 
-        telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        telemetryA.addLine("The robot will run at 1 power until it reaches " + DISTANCE + " inches to the right.");
-        telemetryA.addLine("Make sure you have enough room, since the robot has inertia after cutting power.");
-        telemetryA.addLine("After running the distance, the robot will cut power from the drivetrain and display the strafe velocity.");
-        telemetryA.addLine("Press CROSS or A on game pad 1 to stop.");
-        telemetryA.update();
+        multipleTelemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
+        multipleTelemetry.addLine("The robot will run at 1 power until it reaches " + DISTANCE + " inches to the right.");
+        multipleTelemetry.addLine("Make sure you have enough room, since the robot has inertia after cutting power.");
+        multipleTelemetry.addLine("After running the distance, the robot will cut power from the drivetrain and display the strafe velocity.");
+        multipleTelemetry.addLine("Press CROSS or A on game pad 1 to stop.");
+        multipleTelemetry.update();
     }
 
     /**
@@ -160,10 +161,10 @@ public class StrafeVelocityTuner extends OpMode {
             for (Double velocity : velocities) {
                 average += velocity;
             }
-            average /= (double) velocities.size();
+            average /= velocities.size();
 
-            telemetryA.addData("strafe velocity:", average);
-            telemetryA.update();
+            multipleTelemetry.addData("strafe velocity:", average);
+            multipleTelemetry.update();
         }
     }
 }
