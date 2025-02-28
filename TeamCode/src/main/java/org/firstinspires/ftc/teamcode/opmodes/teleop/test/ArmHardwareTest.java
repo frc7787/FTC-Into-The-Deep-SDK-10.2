@@ -5,10 +5,9 @@ import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.*;
 import static org.firstinspires.ftc.teamcode.arm.ArmConstants.*;
 import static org.firstinspires.ftc.teamcode.arm.ArmConversions.extensionTicksToInches;
 
-import com.acmerobotics.roadrunner.Pose2d;
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -16,7 +15,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
 
 @TeleOp(group = "Test")
@@ -28,7 +26,7 @@ public final class ArmHardwareTest extends OpMode {
     private DcMotorImplEx rotationMotor, extensionMotorOne, extensionMotorTwo;
     private Servo intakeServo;
     private DigitalChannel extensionLimitSwitch, frontRotationLimitSwitch, backRotationLimitSwitch;
-    private MecanumDrive mecanumDrive;
+    private Follower mecanumDrive;
 
     @Override public void init() {
         rotationMotor = hardwareMap.get(DcMotorImplEx.class, ROTATION_MOTOR_NAME);
@@ -56,7 +54,7 @@ public final class ArmHardwareTest extends OpMode {
         intakeServo.setDirection(Servo.Direction.REVERSE);
         intakeServo.setPosition(0.0);
         MotorUtility.setZeroPowerBehaviours(BRAKE, rotationMotor, extensionMotorOne, extensionMotorTwo);
-        mecanumDrive = new MecanumDrive(hardwareMap, new Pose2d(0.0, 0.0, 0.0));
+        mecanumDrive = new Follower(hardwareMap);
         extensionLimitSwitch = hardwareMap.get(DigitalChannel.class, "extensionLimitSwitch");
         frontRotationLimitSwitch = hardwareMap.get(DigitalChannel.class, "frontRotationLimitSwitch");
         backRotationLimitSwitch = hardwareMap.get(DigitalChannel.class, "backRotationLimitSwitch");
@@ -78,7 +76,7 @@ public final class ArmHardwareTest extends OpMode {
         double turn = gamepad1.right_stick_x;
         turn *= Math.abs(turn);
 
-        mecanumDrive.robotCentric(drive, strafe, turn);
+        mecanumDrive.setTeleOpMovementVectors(drive, strafe, turn);
 
         if (gamepad2.left_bumper) {
             intakeServo.setPosition(INTAKE_OPEN_POSITION);

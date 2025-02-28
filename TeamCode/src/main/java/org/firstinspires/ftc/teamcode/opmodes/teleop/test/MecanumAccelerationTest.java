@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 
-import com.acmerobotics.roadrunner.Pose2d;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
+
+import org.firstinspires.ftc.pedropathing.constants.LocalizerConstants;
+import org.firstinspires.ftc.pedropathing.constants.PathFollowingConstants;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -12,7 +15,7 @@ import java.util.*;
 
 @TeleOp(group = "Test")
 public final class MecanumAccelerationTest extends OpMode {
-    private MecanumDrive driveBase;
+    private Follower driveBase;
     private ElapsedTime elapsedTime;
 
     private ArrayList<String> timeAndVelocityPairs;
@@ -20,7 +23,8 @@ public final class MecanumAccelerationTest extends OpMode {
     private boolean fileSaved, initialized;
 
     @Override public void init() {
-        driveBase = new MecanumDrive(hardwareMap, new Pose2d(0.0, 0.0, 0.0));
+        Constants.setConstants(PathFollowingConstants.class, LocalizerConstants.class);
+        driveBase = new Follower(hardwareMap);
 
         elapsedTime = new ElapsedTime();
         timeAndVelocityPairs = new ArrayList<>();
@@ -33,16 +37,16 @@ public final class MecanumAccelerationTest extends OpMode {
     }
 
     @Override public void loop() {
-        double velocity = driveBase.localizer.par.getPositionAndVelocity().velocity;
+        double velocity = driveBase.getVelocityMagnitude();
         double time = elapsedTime.seconds();
 
         if (!initialized) {
             initialized = true;
-            driveBase.robotCentric(1.0, 0, 0);
+            driveBase.setTeleOpMovementVectors(1.0, 0.0, 0.0);
         }
 
         if (elapsedTime.seconds() > 1.2) {
-            driveBase.robotCentric(0,0,0);
+            driveBase.setTeleOpMovementVectors(0.0, 0.0, 0.0);
             if (!fileSaved && velocity == 0.0) {
                 fileSaved = true;
                 saveFile();

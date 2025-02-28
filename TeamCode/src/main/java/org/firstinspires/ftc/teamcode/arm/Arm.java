@@ -105,9 +105,9 @@ public final class Arm {
 
         intakePosition = INTAKE_CLOSED_POSITION;
 
-        rotationController = new PIDController(ROTATION_KP, ROTATION_KI, ROTATION_KD, ROTATION_KSTATIC, ROTATION_KSTATIC);
+        rotationController = new PIDController(ROTATION_KP, ROTATION_KI, ROTATION_KD);
         rotationController.setTolerance(ROTATION_TOLERANCE_TICKS);
-        extensionController = new PIDController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI, EXTENSION_KSTATIC, EXTENSION_KSTATIC);
+        extensionController = new PIDController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI);
         extensionController.setTolerance(EXTENSION_TOLERANCE_TICKS);
 
         extensionLimitSwitchWasPressed = false;
