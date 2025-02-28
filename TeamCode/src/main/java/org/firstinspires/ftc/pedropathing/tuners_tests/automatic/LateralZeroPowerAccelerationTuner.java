@@ -48,7 +48,7 @@ import java.util.List;
  */
 @Config
 @Autonomous(group = "Automatic Tuners")
-public class LateralZeroPowerAccelerationTuner extends OpMode {
+public final class LateralZeroPowerAccelerationTuner extends OpMode {
     private ArrayList<Double> accelerations = new ArrayList<>();
 
     private DcMotorEx leftFront;

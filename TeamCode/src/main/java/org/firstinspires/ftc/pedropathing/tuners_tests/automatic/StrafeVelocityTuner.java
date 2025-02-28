@@ -48,7 +48,7 @@ import java.util.List;
  */
 @Config
 @Autonomous(group = "Automatic Tuners")
-public class StrafeVelocityTuner extends OpMode {
+public final class StrafeVelocityTuner extends OpMode {
     private final ArrayList<Double> velocities = new ArrayList<>();
 
     private DcMotorEx leftFront,

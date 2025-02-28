@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Config
 @TeleOp(group = "Test")
-public class LocalizationTest extends OpMode {
+public final class LocalizationTest extends OpMode {
     private PoseUpdater poseUpdater;
     private DashboardPoseTracker dashboardPoseTracker;
     private Telemetry multipleTelemetry;

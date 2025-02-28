@@ -28,7 +28,7 @@ import com.pedropathing.pathgen.Point;
  */
 @Config
 @Autonomous (name = "Circle", group = "Examples")
-public class Circle extends OpMode {
+public final class Circle extends OpMode {
     private Telemetry telemetryA;
 
     public static double RADIUS = 10;

@@ -29,11 +29,11 @@ import com.pedropathing.pathgen.Point;
  * @version 1.0, 3/13/2024
  */
 @Config
-@Autonomous (name = "Curved Back And Forth", group = "PIDF Testing")
-public class CurvedBackAndForth extends OpMode {
+@Autonomous(group = "PIDF Testing")
+public final class CurvedBackAndForth extends OpMode {
     private Telemetry telemetryA;
 
-    public static double DISTANCE = 20;
+    public static volatile double DISTANCE = 20;
 
     private boolean forward = true;
 

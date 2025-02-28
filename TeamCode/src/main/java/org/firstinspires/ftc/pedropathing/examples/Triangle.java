@@ -25,7 +25,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * @version 1.0, 12/30/2024
  */
 @Autonomous(name = "Triangle", group = "Examples")
-public class Triangle extends OpMode {
+public final class Triangle extends OpMode {
     private Follower follower;
 
     private final Pose startPose = new Pose(0,0, Math.toRadians(0));

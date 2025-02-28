@@ -17,7 +17,7 @@ import org.firstinspires.ftc.pedropathing.constants.PathFollowingConstants;
  */
 
 @TeleOp(name = "Example Robot-Centric Teleop", group = "Examples")
-public class ExampleRobotCentricTeleop extends OpMode {
+public final class ExampleRobotCentricTeleop extends OpMode {
     private Follower follower;
     private final Pose startPose = new Pose(0,0,0);
 

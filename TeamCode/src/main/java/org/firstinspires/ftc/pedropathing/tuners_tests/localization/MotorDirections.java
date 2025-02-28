@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TeleOp(group = "Test")
-public class MotorDirections extends OpMode {
+public final class MotorDirections extends OpMode {
     private Telemetry telemetryA;
 
     private DcMotorEx leftFront;

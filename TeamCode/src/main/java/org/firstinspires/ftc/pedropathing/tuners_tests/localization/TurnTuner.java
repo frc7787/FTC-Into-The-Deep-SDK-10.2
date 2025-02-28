@@ -29,7 +29,7 @@ import com.pedropathing.util.Drawing;
  */
 @Config
 @Autonomous(group = "Localization")
-public class TurnTuner extends OpMode {
+public final class TurnTuner extends OpMode {
     private PoseUpdater poseUpdater;
     private DashboardPoseTracker dashboardPoseTracker;
 

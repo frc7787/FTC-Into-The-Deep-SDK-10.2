@@ -26,7 +26,7 @@ import org.firstinspires.ftc.pedropathing.constants.PathFollowingConstants;
  */
 
 @Autonomous(name = "Example Auto Blue", group = "Examples")
-public class ExampleBucketAuto extends OpMode {
+public final class ExampleBucketAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
