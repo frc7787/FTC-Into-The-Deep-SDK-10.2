@@ -1,95 +1,64 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.*;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
+import org.firstinspires.ftc.teamcode.DataLogger;
+import org.firstinspires.ftc.teamcode.hardware.MotorGroup;
+import org.firstinspires.ftc.teamcode.hardware.Motor.AngularVelocityUnit;
 
 @TeleOp(group = "Test")
 public final class ExtensionCurrentTest extends OpMode {
-    private DcMotorImplEx extensionMotorOne, extensionMotorTwo;
+    private MotorGroup extensionMotorGroup;
 
     private ElapsedTime timer;
     private boolean initialized, fileSaved;
 
-    private ArrayList<String> data;
+    private DataLogger dataLogger;
 
     @Override public void init() {
-        extensionMotorOne = hardwareMap.get(DcMotorImplEx.class, "extensionMotorOne");
-        extensionMotorTwo = hardwareMap.get(DcMotorImplEx.class, "extensionMotorTwo");
-        extensionMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionMotorOne.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        extensionMotorTwo.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        extensionMotorGroup = new MotorGroup(
+                hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME),
+                hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME),
+                hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME)
+        );
+        extensionMotorGroup.setDirection(DcMotorSimple.Direction.REVERSE);
+
         timer = new ElapsedTime();
         initialized = false;
         fileSaved = false;
-        data = new ArrayList<>();
+
+        dataLogger = new DataLogger();
+        dataLogger.setHeader("Time (Seconds),Current (Amps),RPM");
     }
 
     @Override public void loop() {
-       if (!initialized) {
-           extensionMotorOne.setPower(-1.0);
-           extensionMotorTwo.setPower(-1.0);
-           timer.reset();
-           initialized = true;
+        if (!initialized) {
+            extensionMotorGroup.setPower(1.0);
+            timer.reset();
+            initialized = true;
        }
 
-        if (timer.seconds() > 1.0) {
-            extensionMotorOne.setPower(0.0);
-            extensionMotorTwo.setPower(0.0);
+        double seconds = timer.seconds();
+        double amps = extensionMotorGroup.getCurrentSum(CurrentUnit.AMPS);
+        double rpm = extensionMotorGroup.getVelocity(AngularVelocityUnit.RPM);
 
-            if (!fileSaved && extensionMotorOne.getVelocity() == 0) {
-                saveFile();
-                fileSaved = true;
+        if (seconds > 1.0) extensionMotorGroup.setPower(0.0);
+
+        if (seconds > 1.0 && rpm == 0.0 && !fileSaved) {
+            if (!dataLogger.save("ExtensionCurrentAndRPMLog")) {
+                telemetry.addLine("Failed To Save File");
             }
+            fileSaved = true;
         }
 
-        double extensionCurrentAmps = extensionMotorOne.getCurrent(CurrentUnit.AMPS) +
-                extensionMotorTwo.getCurrent(CurrentUnit.AMPS);
-        double ticksPerSecond = extensionMotorOne.getVelocity();
-
-        data.add(timer.seconds() + "," + extensionCurrentAmps + "," + ticksPerSecond);
-    }
-
-    private void saveFile() {
-        String currentDate =
-                new SimpleDateFormat("yyyyMMdd", Locale.CANADA).format(new Date());
-        String currentTime =
-                new SimpleDateFormat("HHmmss", Locale.CANADA).format(new Date());
-
-        String logFileName = "ExtensionCurrentAndRPMLog" + currentDate + "_" + currentTime + ".txt";
-
-        String pathToAprilTagLogFile
-                = "/sdcard/FIRST/java/src/org/firstinspires/ftc/teamcode/" + logFileName;
-
-        try {
-            File aprilTagLogFile = new File(pathToAprilTagLogFile);
-            FileWriter fileWriter = new FileWriter(aprilTagLogFile, true);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
-            bufferedWriter.write("Time (Seconds),Current (Amps), Ticks / Second\n");
-
-            for (String entry: data) {
-                bufferedWriter.write(entry + "\n");
-            }
-
-            bufferedWriter.close();
-        } catch (IOException e) {
-            telemetry.addData("Failed to write to file", e);
-        }
+        dataLogger.log(seconds + "," + amps + "," + rpm);
     }
 }

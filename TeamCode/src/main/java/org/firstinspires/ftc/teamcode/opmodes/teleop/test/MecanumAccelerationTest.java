@@ -5,31 +5,28 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-
-import org.firstinspires.ftc.pedropathing.constants.LocalizerConstants;
-import org.firstinspires.ftc.pedropathing.constants.PathFollowingConstants;
-
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import org.firstinspires.ftc.teamcode.pedropathing.constants.LocalizerConstants;
+import org.firstinspires.ftc.teamcode.pedropathing.constants.PathFollowingConstants;
+import org.firstinspires.ftc.teamcode.DataLogger;
 
 @TeleOp(group = "Test")
 public final class MecanumAccelerationTest extends OpMode {
     private Follower driveBase;
     private ElapsedTime elapsedTime;
 
-    private ArrayList<String> timeAndVelocityPairs;
-
     private boolean fileSaved, initialized;
 
+    private DataLogger dataLogger;
+
     @Override public void init() {
-        Constants.setConstants(PathFollowingConstants.class, LocalizerConstants.class);
-        driveBase = new Follower(hardwareMap);
+        driveBase = new Follower(hardwareMap, PathFollowingConstants.class, LocalizerConstants.class);
 
         elapsedTime = new ElapsedTime();
-        timeAndVelocityPairs = new ArrayList<>();
         fileSaved = false;
         initialized = false;
+
+        dataLogger = new DataLogger();
+        dataLogger.setHeader("Timer (Seconds),Velocity (Inches / Second)");
     }
 
     @Override public void start() {
@@ -37,51 +34,22 @@ public final class MecanumAccelerationTest extends OpMode {
     }
 
     @Override public void loop() {
-        double velocity = driveBase.getVelocityMagnitude();
-        double time = elapsedTime.seconds();
-
         if (!initialized) {
             initialized = true;
             driveBase.setTeleOpMovementVectors(1.0, 0.0, 0.0);
         }
 
-        if (elapsedTime.seconds() > 1.2) {
-            driveBase.setTeleOpMovementVectors(0.0, 0.0, 0.0);
-            if (!fileSaved && velocity == 0.0) {
-                fileSaved = true;
-                saveFile();
+        double seconds = elapsedTime.seconds();
+        double velocity = driveBase.getVelocityMagnitude();
+
+        if (seconds > 1.2) driveBase.setTeleOpMovementVectors(0.0, 0.0, 0.0);
+
+        if (seconds > 1.2 && velocity == 0 && !fileSaved) {
+            if (!dataLogger.save("MecanumVelocityLog")) {
+                telemetry.addLine("Failed To Save File");
             }
         }
 
-        timeAndVelocityPairs.add(velocity + "," + time);
+        dataLogger.log(seconds + "," + velocity);
     }
-
-    private void saveFile() {
-        String currentDate =
-                new SimpleDateFormat("yyyyMMdd", Locale.CANADA).format(new Date());
-        String currentTime =
-                new SimpleDateFormat("HHmmss", Locale.CANADA).format(new Date());
-
-        String aprilTagLogFileName = "MecanumVelocityLog" + currentDate + "_" + currentTime + ".txt";
-
-        String pathToAprilTagLogFile
-                = "/sdcard/FIRST/java/src/org/firstinspires/ftc/teamcode/" + aprilTagLogFileName;
-
-        try {
-            File aprilTagLogFile = new File(pathToAprilTagLogFile);
-            FileWriter fileWriter = new FileWriter(aprilTagLogFile, true);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
-            bufferedWriter.write("Ticks / Second,Seconds\n");
-
-            for (String timeAndVelocityPair : timeAndVelocityPairs) {
-                bufferedWriter.write(timeAndVelocityPair + "\n");
-            }
-
-            bufferedWriter.close();
-        } catch (IOException e) {
-            telemetry.addData("Failed to write to file", e);
-        }
-    }
-
 }

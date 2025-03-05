@@ -27,4 +27,17 @@ android {
     namespace = 'com.qualcomm.ftcrobotcontroller'
 }
 
+repositories {
+    maven {
+        url "https://repo.dairy.foundation/releases"
+    }
+    maven {
+        url "https://repo.dairy.foundation/snapshots"
+    }
+}
+
+dependencies {
+    annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+}
+
 apply from: '../build.dependencies.gradle'

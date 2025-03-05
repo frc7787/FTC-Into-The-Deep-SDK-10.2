@@ -3,14 +3,15 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.arm.Arm;
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
+import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
 
 @TeleOp(group = "Test")
 public class ArmPositionTest extends OpMode {
     private Arm arm;
 
     @Override public void init() {
-       arm = new Arm(hardwareMap);
+       arm = new Arm(hardwareMap, OpModeMeta.Flavor.TELEOP);
     }
 
     @Override public void loop() {
