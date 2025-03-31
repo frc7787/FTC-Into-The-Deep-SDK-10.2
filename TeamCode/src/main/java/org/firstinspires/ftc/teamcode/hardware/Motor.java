@@ -28,8 +28,13 @@ public final class Motor {
     // ---------------------------------------------------------------------------------------------
     // State
 
-    private int positionOffset;
+    private int positionOffset,
+                previousPositionOffset;
     private double cachedPowerThreshold;
+    private double velocityTicksPerSecond,
+                   previousVelocityTicksPerSecond;
+    private double accelerationTicksPerSecondSquared;
+    private double previousAccelerationMeasurementTimeSeconds;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -43,6 +48,7 @@ public final class Motor {
         this.motorConfiguration = motorConfiguration;
         positionOffset = 0;
         cachedPowerThreshold = 0.02;
+        previousAccelerationMeasurementTimeSeconds = System.nanoTime() / 1E9;
         initialize();
         initializeCache();
     }
@@ -80,6 +86,7 @@ public final class Motor {
         internalMotor.setMode(RunMode.RUN_WITHOUT_ENCODER);
         cachedPower = 0.0;
         positionOffset = 0;
+        previousAccelerationMeasurementTimeSeconds = System.nanoTime() / 1E9;
     }
 
     /**
@@ -138,7 +145,10 @@ public final class Motor {
      * Sets the position of the motor.
      * @param position The position to set the motor
      */
-    public void setPosition(int position) { positionOffset = position - rawPosition(); }
+    public void setPosition(int position) {
+        previousPositionOffset = positionOffset;
+        positionOffset = position - rawPosition();
+    }
 
     /**
      * @return The current power of the motor, a value between -1.0 and 1.0
@@ -156,6 +166,29 @@ public final class Motor {
      */
     public int position() {
         return internalMotor.getCurrentPosition() + positionOffset;
+    }
+
+    public double acceleration(@NonNull AngularAccelerationUnit angularAccelerationUnit) {
+        double currentTimeSeconds = System.nanoTime() / 1E9;
+        double deltaTimeSeconds
+                = currentTimeSeconds - previousAccelerationMeasurementTimeSeconds;
+        double accelerationTicksPerSecondSquared
+                = (velocityTicksPerSecond - previousVelocityTicksPerSecond) / deltaTimeSeconds;
+        previousVelocityTicksPerSecond = velocityTicksPerSecond;
+        previousAccelerationMeasurementTimeSeconds = currentTimeSeconds;
+
+        switch (angularAccelerationUnit) {
+            case TICKS_PER_SECOND_SQUARED:
+                return accelerationTicksPerSecondSquared;
+            case DEGREES_PER_SECOND_SQUARED:
+                return accelerationTicksPerSecondSquared
+                       / (motorConfiguration.ticksPerRevolutionAtMotorShaft / 360.0);
+            case RADIANS_PER_SECOND_SQUARED:
+                return accelerationTicksPerSecondSquared * (Math.PI * 2)
+                       / motorConfiguration.ticksPerRevolutionAtMotorShaft;
+        }
+
+        throw new AssertionError("Unreachable statement: Enum must be one of it's variants");
     }
 
     /** @return The raw position of the motor, ignoring the internal offset */
@@ -235,43 +268,46 @@ public final class Motor {
     }
 
     public static final class MotorConfiguration {
-        private final double gearRatio;
-        private final double ticksPerRevolution;
-        private final double achievableMaxRPM;
+        public final double gearRatio;
+        public final double achievableMaxRPM;
+        public final double ticksPerRevolutionAtMotorShaft;
 
+        /**
+         *
+         * @param gearRatio The gear ratio of the motor. If this value is set to the gear ratio of
+         *                  the internal gearbox of the motor, {@link Motor#velocity(AngularVelocityUnit)}
+         *                  will return the velocity of the motor at the output shaft. If this value
+         *                  is set to the total gear ratio (internal and external) then
+         *                  {@link Motor#velocity(AngularVelocityUnit)} will return the velocity of
+         *                  the motor at the output of the gear box.
+         * @param ticksPerRevolutionAtMotorShaft The ticks per revolution of the motor at the motor
+         *                                       shaft before any internal gearbox
+         * @param achievableMaxRPM The max achievable RPM of the motor
+         */
         public MotorConfiguration(
-             double gearRatio,
-             double ticksPerRevolution,
-             double achievableMaxRPM
+                double gearRatio,
+                double achievableMaxRPM,
+                double ticksPerRevolutionAtMotorShaft
         ) {
             if (gearRatio <= 0.0) {
                 throw new IllegalArgumentException("Gear reduction must be greater than 0.0");
             }
             this.gearRatio = gearRatio;
 
-            if (ticksPerRevolution <= 0.0) {
-                throw new IllegalArgumentException("Counts per revolution must be greater than 0.0");
-            }
-            this.ticksPerRevolution = ticksPerRevolution;
-
             if (achievableMaxRPM <= 0.0) {
                 throw new IllegalArgumentException("Achievable max RPM must be greater than 0.0");
             }
             this.achievableMaxRPM = achievableMaxRPM;
+
+            if (ticksPerRevolutionAtMotorShaft <= 0.0) {
+                throw new IllegalArgumentException("Ticks per revolution must be greater than 0.0");
+            }
+            this.ticksPerRevolutionAtMotorShaft = ticksPerRevolutionAtMotorShaft;
         }
 
         public MotorConfiguration(@NonNull MotorType motorType) {
-            this(motorType.gearRatio, motorType.outputTicksPerRevolution(), motorType.maxAchievableRPM);
+            this(motorType.gearRatio, motorType.maxAchievableRPM, motorType.ticksPerRevolutionAtMotorShaft);
         }
-
-        /** The gear ratio of the motor */
-        public double gearRatio() { return gearRatio; }
-
-        /** The ticks per revolution of the motor before the internal gearbox */
-        public double ticksPerRevolution() { return ticksPerRevolution; }
-
-        /** @return The maximum RPM the motor can reach */
-        public double achievableMaxRPM() { return achievableMaxRPM; }
 
         public enum MotorType {
             BARE_MODERN_ROBOTICS(28.0, 6000.0, 1.0),
@@ -294,25 +330,20 @@ public final class Motor {
             TETRIX_TORQUENADO_40(24.0, 200.0, 40.0),
             TETRIX_TORQUENADO_60(24.0, 100.0, 60.0);
 
-            private final double countsPerRevolutionAtMotor;
-            private final double maxAchievableRPM;
-            private final double gearRatio;
+            public final double maxAchievableRPM;
+            public final double gearRatio;
+            public final double ticksPerRevolutionAtMotorShaft;
 
             /**
-             * @param countsPerRevolutionAtMotor The ticks per revolution of the motor before the internal
+             * @param ticksPerRevolutionAtMotorShaft The ticks per revolution of the motor before the internal
              *                           gearbox
              * @param maxAchievableRPM The achievable max RPM of the motor
              * @param gearRatio The gear reduction of the internal gear box
              */
-            MotorType(double countsPerRevolutionAtMotor, double maxAchievableRPM, double gearRatio) {
-                this.countsPerRevolutionAtMotor = countsPerRevolutionAtMotor;
+            MotorType(double ticksPerRevolutionAtMotorShaft, double maxAchievableRPM, double gearRatio) {
                 this.maxAchievableRPM = maxAchievableRPM;
                 this.gearRatio = gearRatio;
-            }
-
-            /** @return The ticks per revolution of the motor after the internal gearbox */
-            public double outputTicksPerRevolution() {
-                return countsPerRevolutionAtMotor * gearRatio;
+                this.ticksPerRevolutionAtMotorShaft = ticksPerRevolutionAtMotorShaft;
             }
         }
     }
@@ -322,5 +353,11 @@ public final class Motor {
         DEGREES_PER_SECOND,
         RADIANS_PER_SECOND,
         RPM
+    }
+
+    public enum AngularAccelerationUnit {
+        TICKS_PER_SECOND_SQUARED,
+        DEGREES_PER_SECOND_SQUARED,
+        RADIANS_PER_SECOND_SQUARED
     }
 }
