@@ -16,8 +16,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedropathing.constants.LocalizerConstants;
 import org.firstinspires.ftc.teamcode.pedropathing.constants.PathFollowingConstants;
-import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
+
+import dev.frozenmilk.dairy.core.util.OpModeLazyCell;
 
 @Autonomous
 @Config
@@ -91,7 +92,9 @@ public final class FourBucket extends OpMode {
 
     // ---------------------------------------------------------------------------------------------
 
-    private Arm arm;
+    private final OpModeLazyCell<Arm> armCell = new OpModeLazyCell<>(() -> new Arm(hardwareMap));
+    private Arm arm() { return armCell.get(); }
+
     private Follower follower;
     private AutoState autoState;
 
@@ -100,15 +103,12 @@ public final class FourBucket extends OpMode {
         follower.setStartingPose(startPose);
         buildPaths(follower.pathBuilder());
         autoState = AutoState.START;
-        arm = new Arm(hardwareMap, OpModeMeta.Flavor.AUTONOMOUS);
-
         movementInitialized = false;
         timer = new ElapsedTime();
     }
 
     @Override public void loop() {
         follower.update();
-        arm.update();
 
         switch (autoState) {
             case START:
@@ -143,11 +143,11 @@ public final class FourBucket extends OpMode {
             case RIGHT_SAMPLE_TO_BUCKET:
                 if (!movementInitialized) {
                     follower.followPath(rightSampleToBucket);
-                    arm.setTargetPositionPolar(HIGH_BUCKET_INCHES, HIGH_BUCKET_DEGREES);
+                    arm().setTargetPositionPolar(HIGH_BUCKET_INCHES, HIGH_BUCKET_DEGREES);
                     movementInitialized = true;
                 }
 
-                if (arm.atPosition() && !follower.isBusy()) {
+                if (arm().atPosition() && !follower.isBusy()) {
                     movementInitialized = false;
                     autoState = AutoState.SCORE_RIGHT_SAMPLE;
                 }
@@ -196,12 +196,12 @@ public final class FourBucket extends OpMode {
 
     private boolean movingToPosition(@NonNull Path path, double inches, double degrees) {
         if (!movementInitialized) {
-           arm.setTargetPositionPolar(inches, degrees);
+           arm().setTargetPositionPolar(inches, degrees);
            follower.followPath(path);
            movementInitialized = true;
         }
 
-        boolean isFinished = arm.atPosition() && !follower.isBusy();
+        boolean isFinished = arm().atPosition() && !follower.isBusy();
         if (isFinished) movementInitialized = false;
         return isFinished;
     }

@@ -5,20 +5,25 @@ import com.pedropathing.localization.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.hardware.subsystems.Hanger;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.pedropathing.constants.*;
-import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
+
+import dev.frozenmilk.dairy.core.util.OpModeLazyCell;
 
 @TeleOp(group = "$")
 public final class Main extends OpMode {
     private Arm arm;
     private Intake intake;
+    private Hanger hanger;
+
     private Follower mecanumDrive;
 
     @Override public void init() {
-        arm = new Arm(hardwareMap, OpModeMeta.Flavor.TELEOP);
+        arm = new Arm(hardwareMap);
         intake = new Intake(hardwareMap);
+        hanger = new Hanger(hardwareMap);
         mecanumDrive = new Follower(hardwareMap, PathFollowingConstants.class, LocalizerConstants.class);
         mecanumDrive.setStartingPose(new Pose(0.0, 0.0, 0.0));
     }
@@ -49,7 +54,6 @@ public final class Main extends OpMode {
             arm.setManualInputs(extensionInput, rotationInput);
         }
 
-        arm.update();
         arm.globalDebug(telemetry);
         arm.positionDebug(telemetry);
     }

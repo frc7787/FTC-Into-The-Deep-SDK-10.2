@@ -4,30 +4,57 @@ import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.Servo.Direction;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.util.List;
+
+/**
+ * <h3>Overview</h3>
+ * <p>
+ *  The hanger subsystem encapsulates the stilt servos required to hang and is responsible for
+ *  ensuring they are never activated more than once in an opMode.
+ * </p>
+ * <p>
+ *  Additionally, it is important to note that the {@link Arm} is also integral to the ascent of
+ *  the robot.
+ * </p>
+ * <h3>Hardware</h3>
+ * <ul>
+ *     <li>
+ *         <p>Front Stilt Servo</p>
+ *         <p>Hardware Map Name: frontStiltServo</p>
+ *     </li>
+ *     <li>
+ *         <p>Back Stilt Servo</p>
+ *         <p>Hardware Map Name: backStiltServo</p>
+ *     </li>
+ * </ul>
+ */
 public final class Hanger {
+
     // ---------------------------------------------------------------------------------------------
     // Properties
 
-    @NonNull public static final String FRONT_STILT_SERVO_NAME = "frontStiltServo";
-    @NonNull public static final String BACK_STILT_SERVO_NAME = "backStiltServo";
+    @NonNull private final String FRONT_STILT_SERVO_NAME = "frontStiltServo";
+    @NonNull private final String BACK_LEFT_STILT_SERVO_NAME = "backLeftStiltServo";
+    @NonNull private final String BACK_RIGHT_STILT_SERVO_NAME = "backRightStiltServo";
 
-    public static volatile double IDLE_POSITION = 0.0;
-    public static volatile double PRIMED_POSITION = 0.0;
-    public static volatile double RELEASE_POSITION = 0.0;
-
-    @NonNull public static volatile Servo.Direction FRONT_STILT_SERVO_DIRECTION = Servo.Direction.FORWARD;
-    @NonNull public static volatile Servo.Direction BACK_STILT_SERVO_DIRECTION = Servo.Direction.REVERSE;
+    private final double IDLE_POSITION = 0.0;
+    private final double PRIMED_POSITION = 0.0;
+    private final double RELEASE_POSITION = 0.0;
+    @NonNull private final Direction HANG_SERVO_DIRECTION = Direction.FORWARD;
 
     // ---------------------------------------------------------------------------------------------
 
     // ---------------------------------------------------------------------------------------------
     // Hardware
 
-    @NonNull private final Servo frontStiltServo,
-                                 backStiltServo;
+    /**
+     * The hang servos in the order front, back left, back right
+     */
+    @NonNull private final List<Servo> hangServos;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -39,17 +66,20 @@ public final class Hanger {
     // ---------------------------------------------------------------------------------------------
 
     public Hanger(@NonNull HardwareMap hardwareMap) {
-        frontStiltServo = hardwareMap.get(Servo.class, FRONT_STILT_SERVO_NAME);
-        backStiltServo = hardwareMap.get(Servo.class, BACK_STILT_SERVO_NAME);
+        hangServos = List.of(
+                hardwareMap.get(Servo.class, FRONT_STILT_SERVO_NAME),
+                hardwareMap.get(Servo.class, BACK_LEFT_STILT_SERVO_NAME),
+                hardwareMap.get(Servo.class, BACK_RIGHT_STILT_SERVO_NAME)
+        );
         released = false;
         initializeHardware();
     }
 
     private void initializeHardware() {
-        frontStiltServo.setPosition(IDLE_POSITION);
-        backStiltServo.setPosition(IDLE_POSITION);
-        frontStiltServo.setDirection(FRONT_STILT_SERVO_DIRECTION);
-        backStiltServo.setDirection(BACK_STILT_SERVO_DIRECTION);
+        hangServos.forEach(servo -> {
+            servo.setDirection(Direction.REVERSE);
+            servo.setPosition(IDLE_POSITION);
+        });
     }
 
     /**
@@ -58,8 +88,7 @@ public final class Hanger {
      */
     public void prime() {
         if (released) return;
-        frontStiltServo.setPosition(PRIMED_POSITION);
-        backStiltServo.setPosition(PRIMED_POSITION);
+        hangServos.forEach(servo -> servo.setPosition(PRIMED_POSITION));
     }
 
     /**
@@ -68,35 +97,33 @@ public final class Hanger {
      */
     public void idle() {
         if (released) return;;
-        frontStiltServo.setPosition(IDLE_POSITION);
-        backStiltServo.setPosition(IDLE_POSITION);
+        hangServos.forEach(servo -> servo.setPosition(IDLE_POSITION));
     }
 
-    /**
-     * Sets the stilts to the released position
-     */
+    /** Sets the stilts to the released position. */
     public void release() {
-        frontStiltServo.setPosition(RELEASE_POSITION);
-        backStiltServo.setPosition(RELEASE_POSITION);
+        hangServos.forEach(servo -> servo.setPosition(RELEASE_POSITION));
         released = true;
     }
 
-    /**
-     * @return Whether the hanger stilts have been released
-     */
+    /** @return Whether the hanger stilts have been released. */
     public boolean released() { return released; }
 
     /**
-     * Displays debug information about the hanger subsystem
-     * @param telemetry The telemetry to display debug information on
+     * Displays debug information about the hanger subsystem.
+     * @param telemetry The telemetry to display the information on
      */
     public void debug(@NonNull Telemetry telemetry) {
         telemetry.addData("Released", released);
+        
         telemetry.addLine("----- Front Stilt -----");
-        telemetry.addData("Position", frontStiltServo.getPosition());
-        telemetry.addData("Direction", frontStiltServo.getDirection());
-        telemetry.addLine("----- Back Stilt -----");
-        telemetry.addData("Position", backStiltServo.getPosition());
-        telemetry.addData("Direction", backStiltServo.getDirection());
+        telemetry.addData("Position", hangServos.get(0).getPosition());
+        telemetry.addData("Direction", hangServos.get(0).getDirection());
+        telemetry.addLine("----- Back Left Stilt -----");
+        telemetry.addData("Position", hangServos.get(1).getPosition());
+        telemetry.addData("Direction", hangServos.get(1).getDirection());
+        telemetry.addLine("----- Back Right Stilt -----");
+        telemetry.addData("Position", hangServos.get(2).getPosition());
+        telemetry.addData("Direction", hangServos.get(2).getDirection());
     }
 }

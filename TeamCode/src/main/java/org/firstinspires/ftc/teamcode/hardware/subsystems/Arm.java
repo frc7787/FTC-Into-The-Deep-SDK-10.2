@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware.subsystems;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -14,8 +16,47 @@ import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.hardware.MotorGroup;
 import org.firstinspires.ftc.teamcode.hardware.PIDController;
 
+/**
+ * <h3>Overview</h3>
+ * <p>
+ *  The arm subsystem encapsulates all of the hardware responsible for the rotation and extension
+ *  of the main mechanism. It is responsible for limiting the arms movement to stay within its
+ *  physical limits as well as respecting the 42'' extension limit.
+ * </p>
+ * <h3>Hardware</h3>
+ * <ul>
+ *     <li>
+ *         <p>Rotation Motor</p>
+ *         <p>Hardware Map Name: rotationMotor</p>
+ *     </li>
+ *     <li>
+ *         <p>Leader Extension Motor</p>
+ *         <p>Hardware Map Name: leaderExtensionMotor</p>
+ *     </li>
+ *     <li>
+ *         <p>Follower Extension Motor One</p>
+ *         <p>Hardware Map Name: followerExtensionMotorOne</p>
+ *     </li>
+ *     <li>
+ *         <p>Follower Extension Motor Two</p>
+ *         <p>Hardware Map Name: followerExtensionMotorTwo</p>
+ *     </li>
+ *     <li>
+ *         <p>Front Rotation Limit Switch</p>
+ *         <p>Hardware Map Name: frontRotationLimitSwitch</p>
+ *     </li>
+ *     <li>
+ *         <p>Back Rotation Limit Switch</p>
+ *         <p>Hardware Map Name: backRotationLimitSwitch</p>
+ *     </li>
+ *     <li>
+ *         <p>Extension Limit Switch</p>
+ *         <p>Hardware Map Name: extensionLimitSwitch</p>
+ *     </li>
+ * </ul>
+ */
+@Config
 public final class Arm {
-
     // ---------------------------------------------------------------------------------------------
     // Properties
 
@@ -85,7 +126,7 @@ public final class Arm {
     // ---------------------------------------------------------------------------------------------
     // State
 
-    @NonNull private final OpModeMeta.Flavor callingOpModeFlavour;
+    @Nullable private OpModeMeta.Flavor callingOpModeFlavour;
 
     @NonNull private State state;
     @NonNull private HomingState homingState;
@@ -94,6 +135,7 @@ public final class Arm {
                                     polarTargetCoordinates,
                                     cartesianTargetCoordinates;
 
+     // Because of the way we use cartesianCoordinates it is easier to reassign it.
     @NonNull private double[] cartesianCoordinates;
 
     @NonNull private final int[] position,
@@ -108,11 +150,12 @@ public final class Arm {
 
     // ---------------------------------------------------------------------------------------------
 
-    public Arm(@NonNull HardwareMap hardwareMap, @NonNull OpModeMeta.Flavor flavor) {
+    public Arm(@NonNull HardwareMap hardwareMap) {
+
         extensionMotorGroup = new MotorGroup(
-                hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME),
-                hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME),
-                hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME)
+                new Motor(hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME)),
+                new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME)),
+                new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME))
         );
         rotationMotor = new Motor(hardwareMap.get(DcMotor.class, ROTATION_MOTOR_NAME));
         extensionLimitSwitch = hardwareMap.get(DigitalChannel.class, EXTENSION_LIMIT_SWITCH_NAME);
@@ -121,7 +164,6 @@ public final class Arm {
         backRotationLimitSwitch
                 = hardwareMap.get(DigitalChannel.class, BACK_ROTATION_LIMIT_SWITCH_NAME);
 
-        callingOpModeFlavour = flavor;
         state = State.HOMING;
         homingState = HomingState.START;
         atPosition = false;
@@ -198,6 +240,12 @@ public final class Arm {
      * Runs the arm homing sequence.
      */
     @NonNull private double[] home() {
+        if (callingOpModeFlavour == null) {
+            String message = "Something has gone wrong with Dairy and preInitUserHook has not "
+                           + "been run";
+            throw new RuntimeException(message);
+        }
+
         double extensionPower = 0.0;
         double rotationPower = 0.0;
 
@@ -207,7 +255,7 @@ public final class Arm {
                 break;
             case EXTENSION:
                 if (extensionLimitSwitch.getState()) {
-                    extensionMotorGroup.reset();
+                    extensionMotorGroup.setPosition(0);
                     homingState = HomingState.ROTATION;
                     break;
                 }
@@ -226,14 +274,15 @@ public final class Arm {
                         break;
                     case AUTONOMOUS:
                         if (backRotationLimitSwitch.getState()) {
-                            rotationMotor.reset();
+                            rotationMotor.setPosition(0);
                             homingState = HomingState.COMPLETE;
                             break;
                         }
                         rotationPower = -ROTATION_HOMING_POWER;
                         break;
                     case SYSTEM:
-                        throw new RuntimeException("Arm should not be called from System OpMode");
+                        // Not possible, filtered out in constructor
+                        break;
                 }
 
                 break;
@@ -241,7 +290,7 @@ public final class Arm {
                 rotationPower = ROTATION_BACKLASH_REMOVAL_POWER;
 
                 if (!frontRotationLimitSwitch.getState()) {
-                    rotationMotor.reset();
+                    rotationMotor.setPosition(0);
                     homingState = HomingState.COMPLETE;
                 }
                 break;
@@ -502,8 +551,6 @@ public final class Arm {
                 robotCentricCartesianCoordinates[1] - ROTATION_VERTICAL_OFFSET_INCHES
         };
     }
-
-    // ---------------------------------------------------------------------------------------------
 
     public enum State {
         HOMING,

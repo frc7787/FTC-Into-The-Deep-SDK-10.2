@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import org.firstinspires.ftc.teamcode.DataLogger;
+import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.hardware.MotorGroup;
 import org.firstinspires.ftc.teamcode.hardware.Motor.AngularVelocityUnit;
 
@@ -25,9 +26,9 @@ public final class ExtensionCurrentTest extends OpMode {
 
     @Override public void init() {
         extensionMotorGroup = new MotorGroup(
-                hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME),
-                hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME),
-                hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME)
+                new Motor(hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME)),
+                new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME)),
+                new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME))
         );
         extensionMotorGroup.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -47,8 +48,8 @@ public final class ExtensionCurrentTest extends OpMode {
        }
 
         double seconds = timer.seconds();
-        double amps = extensionMotorGroup.getCurrentSum(CurrentUnit.AMPS);
-        double rpm = extensionMotorGroup.getVelocity(AngularVelocityUnit.RPM);
+        double amps = extensionMotorGroup.currentSum(CurrentUnit.AMPS);
+        double rpm = extensionMotorGroup.velocity(AngularVelocityUnit.RPM);
 
         if (seconds > 1.0) extensionMotorGroup.setPower(0.0);
 

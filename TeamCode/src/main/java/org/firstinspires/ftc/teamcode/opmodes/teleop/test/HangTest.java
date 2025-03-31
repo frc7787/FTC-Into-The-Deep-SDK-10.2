@@ -14,16 +14,26 @@ public final class HangTest extends OpMode {
     }
 
     @Override public void loop() {
-        if (gamepad1.cross) {
+        if (gamepad1.cross || gamepad2.cross) {
             hanger.release();
-        } else if (gamepad1.dpad_up) {
-            telemetry.addLine("Idle!");
+        } else if (gamepad1.dpad_up || gamepad2.dpad_up) {
             hanger.idle();
-        } else if (gamepad1.dpad_down) {
+        } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
             hanger.prime();
-            telemetry.addLine("Primed!");
         }
 
-        hanger.debug(telemetry);
+        if (gamepad1.options || gamepad2.options) {
+            displayControls();
+        } else {
+            telemetry.addLine("Press options to display controls");
+            hanger.debug(telemetry);
+        }
+    }
+
+    private void displayControls() {
+        telemetry.addLine("----- Controls (Either Gamepad) -----");
+        telemetry.addLine("Press dpad down to prime hanger");
+        telemetry.addLine("Press dpad up to move hanger to idle");
+        telemetry.addLine("Press Cross to release the hanger");
     }
 }

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 
 import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.*;
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Intake.*;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
@@ -9,12 +8,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.hardware.MotorGroup;
+import org.firstinspires.ftc.teamcode.hardware.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.pedropathing.constants.LocalizerConstants;
 import org.firstinspires.ftc.teamcode.pedropathing.constants.PathFollowingConstants;
 
@@ -25,39 +23,41 @@ public final class ArmHardwareTest extends OpMode {
 
     private Motor rotationMotor;
     private MotorGroup extensionMotorGroup;
-    private Servo intakeServo;
+    private Intake intake;
     private DigitalChannel extensionLimitSwitch,
                            frontRotationLimitSwitch,
                            backRotationLimitSwitch;
-    private Follower mecanumDrive;
+    private Follower driveBase;
 
     // ---------------------------------------------------------------------------------------------
 
     @Override public void init() {
         rotationMotor = new Motor(hardwareMap.get(DcMotorImplEx.class, ROTATION_MOTOR_NAME));
         extensionMotorGroup = new MotorGroup(
-                hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME),
-                hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME),
-                hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME)
+                new Motor(hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME)),
+                new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME)),
+                new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME))
         );
-        intakeServo = hardwareMap.get(Servo.class, INTAKE_SERVO_NAME);
-        extensionLimitSwitch = hardwareMap.get(DigitalChannel.class, "extensionLimitSwitch");
-        frontRotationLimitSwitch = hardwareMap.get(DigitalChannel.class, "frontRotationLimitSwitch");
-        backRotationLimitSwitch = hardwareMap.get(DigitalChannel.class, "backRotationLimitSwitch");
-        mecanumDrive
+        intake = new Intake(hardwareMap);
+        extensionLimitSwitch = hardwareMap.get(DigitalChannel.class, EXTENSION_LIMIT_SWITCH_NAME);
+        frontRotationLimitSwitch = hardwareMap.get(DigitalChannel.class, FRONT_ROTATION_LIMIT_SWITCH_NAME);
+        backRotationLimitSwitch = hardwareMap.get(DigitalChannel.class, BACK_ROTATION_LIMIT_SWITCH_NAME);
+        driveBase
                 = new Follower(hardwareMap, PathFollowingConstants.class, LocalizerConstants.class);
         configureHardware();
     }
 
     private void configureHardware() {
-        rotationMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionMotorGroup.setDirection(DcMotorSimple.Direction.REVERSE);
+        rotationMotor.setDirection(ROTATION_MOTOR_DIRECTION);
+        extensionMotorGroup.setDirection(EXTENSION_MOTOR_DIRECTION);
         frontRotationLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
         backRotationLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
         extensionLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
-        intakeServo.setPosition(INTAKE_NEUTRAL_POSITION);
-        mecanumDrive.setPose(new Pose(0.0, 0.0, 0.0));
+        driveBase.initialize();
+        driveBase.setPose(new Pose(0.0, 0.0, 0.0));
     }
+
+    @Override public void start() { driveBase.startTeleopDrive(); }
 
     @Override public void loop() {
         rotationMotor.setPower(-gamepad2.left_stick_y);
@@ -70,12 +70,15 @@ public final class ArmHardwareTest extends OpMode {
         double turn = gamepad1.right_stick_x;
         turn *= Math.abs(turn);
 
-        mecanumDrive.setTeleOpMovementVectors(drive, strafe, turn, true);
+        driveBase.setTeleOpMovementVectors(drive, strafe, turn, true);
+        driveBase.update();
 
-        if (gamepad2.left_bumper) {
-            intakeServo.setPosition(INTAKE_OPEN_POSITION);
-        } else if (gamepad2.right_bumper) {
-            intakeServo.setPosition(INTAKE_CLOSED_POSITION);
+        if (gamepad1.left_bumper || gamepad2.left_bumper) {
+            intake.open();
+        } else if (gamepad1.right_bumper|| gamepad2.right_bumper) {
+            intake.close();
+        } else if (gamepad1.dpad_up || gamepad2.dpad_up) {
+            intake.neutral();
         }
 
         if (gamepad1.options || gamepad2.options) {
@@ -91,7 +94,8 @@ public final class ArmHardwareTest extends OpMode {
         telemetry.addLine("Drive, as normal, with gamepad 1");
         telemetry.addLine("Control rotation with the left stick of gamepad 2");
         telemetry.addLine("Control extension with the right stick of gamepad 2");
-        telemetry.addLine("Open and close the gripper with gamepad 2 left and right bumper");
+        telemetry.addLine("Open and close the gripper with left and right bumper of either gamepad");
+        telemetry.addLine("Press dpad up on either controller to set the intake to neutral position");
     }
 
     private void debug() {
@@ -100,5 +104,6 @@ public final class ArmHardwareTest extends OpMode {
         telemetry.addData("Extension Limit Switch Pressed", extensionLimitSwitch.getState());
         rotationMotor.debug(telemetry, "Rotation");
         extensionMotorGroup.debug(telemetry, "Extension Group");
+        intake.debug(telemetry);
     }
 }

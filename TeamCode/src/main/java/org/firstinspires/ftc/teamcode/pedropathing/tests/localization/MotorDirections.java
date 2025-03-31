@@ -76,7 +76,7 @@ public final class MotorDirections extends OpMode {
         if (gamepad1.square || gamepad2.square) {
             backLeftDriveMotor.setPower(1.0);
         } else {
-            backRightDriveMotor.setPower(0.0);
+            backLeftDriveMotor.setPower(0.0);
         }
 
         if (gamepad1.circle || gamepad2.circle) {

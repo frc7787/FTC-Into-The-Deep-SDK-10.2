@@ -14,7 +14,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
@@ -54,6 +54,8 @@ public final class ForwardVelocityTuner extends OpMode {
                       backLeftDriveMotor,
                       backRightDriveMotor;
 
+    private boolean initialized;
+
     private List<DcMotorEx> motors;
 
     private PoseUpdater poseUpdater;
@@ -61,9 +63,7 @@ public final class ForwardVelocityTuner extends OpMode {
     public static double DISTANCE = 48;
     public static double RECORD_NUMBER = 10;
 
-    private Telemetry telemetryA;
-
-    private boolean end;
+    private Telemetry multipleTelemetry;
 
     /**
      * This initializes the drive motors as well as the cache of velocities and the FTC Dashboard
@@ -71,6 +71,8 @@ public final class ForwardVelocityTuner extends OpMode {
      */
     @Override
     public void init() {
+        initialized = false;
+
         Constants.setConstants(PathFollowingConstants.class, LocalizerConstants.class);
         poseUpdater = new PoseUpdater(hardwareMap);
 
@@ -91,35 +93,21 @@ public final class ForwardVelocityTuner extends OpMode {
             motor.setMotorType(motorConfigurationType);
         }
 
-        for (DcMotorEx motor : motors) {
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        }
+        for (DcMotorEx motor : motors) motor.setZeroPowerBehavior(ZeroPowerBehavior.FLOAT);
 
         for (int i = 0; i < RECORD_NUMBER; i++) {
             velocities.add(0.0);
         }
 
-        telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        telemetryA.addLine("The robot will run at 1 power until it reaches " + DISTANCE + " inches forward.");
-        telemetryA.addLine("Make sure you have enough room, since the robot has inertia after cutting power.");
-        telemetryA.addLine("After running the distance, the robot will cut power from the drivetrain and display the forward velocity.");
-        telemetryA.addLine("Press CROSS or A on game pad 1 to stop.");
-        telemetryA.addData("pose", poseUpdater.getPose());
-        telemetryA.update();
-
+        multipleTelemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
+        multipleTelemetry.addLine("The robot will run at 1 power until it reaches " + DISTANCE + " inches forward.");
+        multipleTelemetry.addLine("Make sure you have enough room, since the robot has inertia after cutting power.");
+        multipleTelemetry.addLine("After running the distance, the robot will cut power from the drivetrain and display the forward velocity.");
+        multipleTelemetry.addLine("Press CROSS or A on game pad 1 to stop.");
+        multipleTelemetry.addData("pose", poseUpdater.getPose());
+        multipleTelemetry.update();
     }
 
-    /**
-     * This starts the OpMode by setting the drive motors to run forward at full power.
-     */
-    @Override
-    public void start() {
-        frontLeftDriveMotor.setPower(1);
-        backLeftDriveMotor.setPower(1);
-        frontRightDriveMotor.setPower(1);
-        backRightDriveMotor.setPower(1);
-        end = false;
-    }
 
     /**
      * This runs the OpMode. At any point during the running of the OpMode, pressing CROSS or A on
@@ -127,45 +115,36 @@ public final class ForwardVelocityTuner extends OpMode {
      * velocities, and when the robot has run forward enough, these last velocities recorded are
      * averaged and printed.
      */
-    @Override
-    public void loop() {
-        if (gamepad1.cross || gamepad1.a) {
-            for (DcMotorEx motor : motors) {
-                motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                motor.setPower(0);
-            }
+    @Override public void loop() {
+        if (!initialized) {
+            for (DcMotorEx motor : motors) motor.setPower(1.0);
+            initialized = true;
+        }
+
+        if (gamepad1.cross || gamepad1.a || gamepad2.cross || gamepad2.a) {
+            for (DcMotorEx motor : motors) motor.setZeroPowerBehavior(ZeroPowerBehavior.BRAKE);
+            for (DcMotorEx motor : motors) motor.setPower(0.0);
             requestOpModeStop();
         }
 
         poseUpdater.update();
-        if (!end) {
-            if (Math.abs(poseUpdater.getPose().getX()) > DISTANCE) {
-                end = true;
-                for (DcMotorEx motor : motors) {
-                    motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    motor.setPower(0);
-                }
-            } else {
-                double currentVelocity = Math.abs(MathFunctions.dotProduct(poseUpdater.getVelocity(), new Vector(1, 0)));
-                velocities.add(currentVelocity);
-                velocities.remove(0);
-            }
-        } else {
-            frontLeftDriveMotor.setPower(0);
-            backLeftDriveMotor.setPower(0);
-            frontRightDriveMotor.setPower(0);
-            backRightDriveMotor.setPower(0);
-            for (DcMotorEx motor : motors) {
-                motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            }
+
+        if (Math.abs(poseUpdater.getPose().getX()) > DISTANCE) {
+            for (DcMotorEx motor : motors) motor.setPower(0.0);
+            for (DcMotorEx motor : motors) motor.setZeroPowerBehavior(ZeroPowerBehavior.BRAKE);
+
             double average = 0;
             for (Double velocity : velocities) {
                 average += velocity;
             }
-            average /= (double) velocities.size();
 
-            telemetryA.addData("forward velocity:", average);
-            telemetryA.update();
+            average /= velocities.size();
+
+            multipleTelemetry.addData("Forward Velocity", average);
+        } else {
+            double currentVelocity = Math.abs(MathFunctions.dotProduct(poseUpdater.getVelocity(), new Vector(1, 0)));
+            velocities.add(currentVelocity);
+            velocities.remove(0);
         }
     }
 }

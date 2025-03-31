@@ -2,12 +2,13 @@ repositories {
     mavenCentral()
     google() // Needed for androidx
 
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://jitpack.io' }
     maven { url = 'https://maven.brott.dev/' }
-    maven { url= 'https://maven.pedropathing.com/' }
+    maven { url = 'https://maven.pedropathing.com/' }
 }
 
 dependencies {
+    // SDK
     implementation 'org.firstinspires.ftc:Inspection:10.2.0'
     implementation 'org.firstinspires.ftc:Blocks:10.2.0'
     implementation 'org.firstinspires.ftc:RobotCore:10.2.0'
@@ -17,7 +18,12 @@ dependencies {
     implementation 'org.firstinspires.ftc:FtcCommon:10.2.0'
     implementation 'org.firstinspires.ftc:Vision:10.2.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
-
-    implementation('com.pedropathing:beta:1.0.9-beta2')
+    // Custom
+    implementation('com.pedropathing:beta:1.0.9-beta2') {
+        exclude group: "com.acmerobotics.dashboard"
+    }
+    // Dairy
+    implementation 'com.acmerobotics.slothboard:dashboard:0.1.1+0.4.16'
+    implementation "dev.frozenmilk.dairy:Core:2.1.0"
 }
 
