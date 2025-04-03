@@ -44,7 +44,8 @@ public final class PIDController {
             timer.reset();
         }
 
-        if (Math.abs(error) < tolerance) output = 0.0;
+        if (Math.abs(error) <= tolerance) output = 0.0;
+        if (Math.abs(lastError) <= tolerance * 1.2) output = 0.0;
 
         return output;
     }

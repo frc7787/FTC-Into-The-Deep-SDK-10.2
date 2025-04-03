@@ -14,7 +14,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.*;
 public final class Motor {
 
     @NonNull private final DcMotorImplEx internalMotor;
+
+    // ---------------------------------------------------------------------------------------------
+    // Configuration
+
     @NonNull private final MotorConfiguration motorConfiguration;
+    private boolean encoderReversed;
 
     // ---------------------------------------------------------------------------------------------
     // Cache
@@ -22,8 +27,6 @@ public final class Motor {
     private double cachedPower;
     @NonNull private ZeroPowerBehavior cachedZeroPowerBehaviour;
     @NonNull private Direction cachedDirection;
-
-    // ---------------------------------------------------------------------------------------------
 
     // ---------------------------------------------------------------------------------------------
     // State
@@ -43,6 +46,7 @@ public final class Motor {
         this.motorConfiguration = motorConfiguration;
         positionOffset = 0;
         cachedPowerThreshold = 0.02;
+        encoderReversed = false;
         initialize();
         initializeCache();
     }
@@ -81,6 +85,9 @@ public final class Motor {
         cachedPower = 0.0;
         positionOffset = 0;
     }
+
+    /** Reverses the direction of the encoder without affecting the direction the motor turns */
+    public void reverseEncoder() { encoderReversed = true; }
 
     /**
      * <p>
@@ -143,19 +150,21 @@ public final class Motor {
     /**
      * @return The current power of the motor, a value between -1.0 and 1.0
      */
-    public double power() { return cachedPower; }
+    public double power() { return internalMotor.getPower(); }
 
     /** @return The current zero power behaviour of the motor */
-    public ZeroPowerBehavior zeroPowerBehaviour() { return cachedZeroPowerBehaviour; }
+    public ZeroPowerBehavior zeroPowerBehaviour() { return internalMotor.getZeroPowerBehavior(); }
 
     /** @return The direction of the motor */
-    public Direction direction() { return cachedDirection; }
+    public Direction direction() { return internalMotor.getDirection(); }
 
     /**
      * @return The position of the motor, including the offset from {@link Motor#setPosition(int)}
      */
     public int position() {
-        return internalMotor.getCurrentPosition() + positionOffset;
+        int position = internalMotor.getCurrentPosition() + positionOffset;
+        if (encoderReversed) position = -position;
+        return position;
     }
 
     /** @return The raw position of the motor, ignoring the internal offset */
@@ -178,7 +187,6 @@ public final class Motor {
             default:
                 return 0.0;
         }
-
     }
 
     /**
@@ -232,6 +240,16 @@ public final class Motor {
     public void debug(@NonNull Telemetry telemetry, @NonNull String name) {
         telemetry.addLine("----- Motor Debug: " + name +  " -----");
         debug(telemetry);
+    }
+
+    /**
+     * Debugs the cache of the motor
+     * @param telemetry The telemetry to display the debug information on
+     */
+    public void debugCache(@NonNull Telemetry telemetry) {
+        telemetry.addData("Direction cache", cachedDirection);
+        telemetry.addData("Power cache", cachedPower);
+        telemetry.addData("Zero Power Behaviour Cache", cachedZeroPowerBehaviour);
     }
 
     public static final class MotorConfiguration {

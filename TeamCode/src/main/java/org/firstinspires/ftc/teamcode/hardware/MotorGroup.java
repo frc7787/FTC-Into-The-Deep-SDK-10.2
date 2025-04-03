@@ -36,6 +36,12 @@ public final class MotorGroup {
         motors.forEach(motor -> motor.setDirection(leaderDirection));
     }
 
+    /** Resets the leader motor */
+    public void reset() { motors.get(0).reset(); }
+
+    /** Reversed the encoder of the leader motor */
+    public void reverseEncoder() { motors.get(0).reverseEncoder(); }
+
     /**
      * <p>Sets the threshold for the motor group to consider a power cached.</p>
      * <p>For more information see {@link Motor#setCachedPowerThreshold(double)}.</p>

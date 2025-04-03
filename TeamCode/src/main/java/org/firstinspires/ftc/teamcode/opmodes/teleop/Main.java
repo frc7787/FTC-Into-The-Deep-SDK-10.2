@@ -5,6 +5,7 @@ import com.pedropathing.localization.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Hanger;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.pedropathing.constants.*;
@@ -21,7 +22,7 @@ public final class Main extends OpMode {
     private Follower mecanumDrive;
 
     @Override public void init() {
-        arm = new Arm(hardwareMap);
+        arm = new Arm(hardwareMap, OpModeMeta.Flavor.AUTONOMOUS);
         intake = new Intake(hardwareMap);
         hanger = new Hanger(hardwareMap);
         mecanumDrive = new Follower(hardwareMap, PathFollowingConstants.class, LocalizerConstants.class);

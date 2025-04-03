@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.hardware.PIDController;
 
 @TeleOp(group = "Test")
@@ -16,9 +17,9 @@ public final class RotationPIDTuning extends OpMode {
     // ---------------------------------------------------------------------------------------------
     // Configuration values (To be edited by dashboard)
 
-    public static volatile double KP = 0.0;
+    public static volatile double KP = 0.015;
     public static volatile double KI = 0.0;
-    public static volatile double KD = 0.0;
+    public static volatile double KD = 0.00035;
     public static volatile int TOLERANCE = 0;
     public static volatile int TARGET = 0;
 
@@ -37,7 +38,7 @@ public final class RotationPIDTuning extends OpMode {
     // ---------------------------------------------------------------------------------------------
     // Hardware
 
-    private DcMotor rotationMotor;
+    private Motor rotationMotor;
     private Gamepad currentGamepad, previousGamepad;
 
     // ---------------------------------------------------------------------------------------------
@@ -49,10 +50,8 @@ public final class RotationPIDTuning extends OpMode {
         rotationController = new PIDController(KP, KI, KD);
         rotationController.setTolerance(TOLERANCE);
 
-        rotationMotor = hardwareMap.get(DcMotor.class, "rotationMotor");
-        rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rotationMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rotationMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rotationMotor = new Motor(hardwareMap.get(DcMotor.class, "rotationMotor"));
+        rotationMotor.reset();
 
         previousGamepad = new Gamepad();
         currentGamepad = new Gamepad();
@@ -70,7 +69,7 @@ public final class RotationPIDTuning extends OpMode {
 
         double leftStickY = -gamepad1.left_stick_y;
 
-        int position = rotationMotor.getCurrentPosition();
+        int position = rotationMotor.position();
         double power = 0.0;
 
         TelemetryPacket packet = new TelemetryPacket();
@@ -109,15 +108,14 @@ public final class RotationPIDTuning extends OpMode {
 
                 power = -leftStickY;
 
-                if (currentGamepad.circle) {
-                    rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    rotationMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                }
+                if (currentGamepad.circle) { rotationMotor.reset(); }
 
                 if (currentGamepad.square) state = State.PID;
 
                 break;
         }
+
+        telemetry.addData("Disabled", disabled);
 
         rotationMotor.setPower(power);
 

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware.subsystems;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -78,26 +77,26 @@ public final class Arm {
 
     // Extension
 
-    public static volatile double EXTENSION_KP = 0.0075;
-    public static final double EXTENSION_KI = 0.0;
-    public static volatile double EXTENSION_KD = 0.00012;
-    public static volatile double EXTENSION_TICKS_PER_INCH = 40.8;
+    public static volatile double EXTENSION_KP = 0.0032;
+    public static volatile double EXTENSION_KI = 0.0;
+    public static volatile double EXTENSION_KD = 0.000085;
+    public static volatile double EXTENSION_TICKS_PER_INCH = 504.3;
     public static volatile double MIN_EXT_INCHES = 15.5;
     public static volatile double MAX_EXT_INCHES = 45.0;
-    public static volatile double EXTENSION_TOLERANCE_TICKS = 15.0;
+    public static volatile double EXTENSION_TOLERANCE_TICKS = 40;
 
     @NonNull public static volatile Direction EXTENSION_MOTOR_DIRECTION = Direction.REVERSE;
 
     // Rotation
 
-    public static volatile double ROTATION_KP = 0.00375;
+    public static volatile double ROTATION_KP = 0.0037;
     public static final double ROTATION_KI = 0.0;
-    public static volatile double ROTATION_KD = 0.0;
+    public static volatile double ROTATION_KD = 0.00035;
     public static volatile double ROTATION_TOLERANCE_TICKS = 20.0;
     public static volatile double MIN_ROT_DEG = -9.0;
     public static volatile double MAX_ROT_DEG = 95.0;
-    public static volatile double ROTATION_STARTING_ANGLE = -18.0;
-    public static volatile double ROTATION_TICKS_PER_DEGREE = 24.5;
+    public static volatile double ROTATION_STARTING_ANGLE = -15.0;
+    public static volatile double ROTATION_TICKS_PER_DEGREE = 33.622;
 
     @NonNull public static volatile Direction ROTATION_MOTOR_DIRECTION = Direction.REVERSE;
 
@@ -126,7 +125,7 @@ public final class Arm {
     // ---------------------------------------------------------------------------------------------
     // State
 
-    @Nullable private OpModeMeta.Flavor callingOpModeFlavour;
+    @NonNull private final OpModeMeta.Flavor callingOpModeFlavour;
 
     @NonNull private State state;
     @NonNull private HomingState homingState;
@@ -150,14 +149,17 @@ public final class Arm {
 
     // ---------------------------------------------------------------------------------------------
 
-    public Arm(@NonNull HardwareMap hardwareMap) {
-
+    public Arm(@NonNull HardwareMap hardwareMap, @NonNull OpModeMeta.Flavor callingOpModeFlavour) {
         extensionMotorGroup = new MotorGroup(
                 new Motor(hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME)),
                 new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME)),
                 new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME))
         );
+        extensionMotorGroup.reset();
+        extensionMotorGroup.reverseEncoder();
         rotationMotor = new Motor(hardwareMap.get(DcMotor.class, ROTATION_MOTOR_NAME));
+        rotationMotor.reset();
+
         extensionLimitSwitch = hardwareMap.get(DigitalChannel.class, EXTENSION_LIMIT_SWITCH_NAME);
         frontRotationLimitSwitch
                 = hardwareMap.get(DigitalChannel.class, FRONT_ROTATION_LIMIT_SWITCH_NAME);
@@ -170,8 +172,8 @@ public final class Arm {
         extensionInputFresh = false;
         rotationInputFresh = false;
 
-        polarCoordinates = new double[]{0.0, 0.0};
-        polarTargetCoordinates = new double[]{0.0, 0.0};
+        polarCoordinates = new double[]{rotationDegreesToTicks(ROTATION_STARTING_ANGLE), 0.0};
+        polarTargetCoordinates = new double[]{ROTATION_STARTING_ANGLE, 0.0};
         cartesianCoordinates = new double[]{0.0, 0.0};
         cartesianTargetCoordinates = new double[]{0.0, 0.0};
         position = new int[]{0, 0};
@@ -183,12 +185,13 @@ public final class Arm {
         extensionController = new PIDController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI);
         rotationController = new PIDController(ROTATION_KP, ROTATION_KI, ROTATION_KD);
 
+        this.callingOpModeFlavour = callingOpModeFlavour;
+
         configureHardware();
     }
 
     private void configureHardware() {
         extensionMotorGroup.setDirection(Direction.REVERSE);
-        rotationMotor.setDirection(Direction.REVERSE);
         extensionLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
         frontRotationLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
         backRotationLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
@@ -229,8 +232,8 @@ public final class Arm {
         extensionMotorGroup.setPower(powers[0]);
         rotationMotor.setPower(powers[1]);
 
-        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 1.0
-                   && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 1.0;
+        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 0.5
+                   && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 0.5;
 
         extensionInputFresh = false;
         rotationInputFresh = false;
@@ -240,12 +243,6 @@ public final class Arm {
      * Runs the arm homing sequence.
      */
     @NonNull private double[] home() {
-        if (callingOpModeFlavour == null) {
-            String message = "Something has gone wrong with Dairy and preInitUserHook has not "
-                           + "been run";
-            throw new RuntimeException(message);
-        }
-
         double extensionPower = 0.0;
         double rotationPower = 0.0;
 
@@ -255,7 +252,7 @@ public final class Arm {
                 break;
             case EXTENSION:
                 if (extensionLimitSwitch.getState()) {
-                    extensionMotorGroup.setPosition(0);
+                    extensionMotorGroup.reset();
                     homingState = HomingState.ROTATION;
                     break;
                 }
@@ -267,32 +264,24 @@ public final class Arm {
                     case TELEOP:
                         if (frontRotationLimitSwitch.getState()) {
                             rotationPower = 0.0;
-                            homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
+                            homingState = HomingState.COMPLETE;
                             break;
                         }
                         rotationPower = ROTATION_HOMING_POWER;
                         break;
                     case AUTONOMOUS:
                         if (backRotationLimitSwitch.getState()) {
-                            rotationMotor.setPosition(0);
+                            rotationMotor.reset();
                             homingState = HomingState.COMPLETE;
                             break;
                         }
-                        rotationPower = -ROTATION_HOMING_POWER;
+                        rotationPower = ROTATION_HOMING_POWER;
                         break;
                     case SYSTEM:
                         // Not possible, filtered out in constructor
                         break;
                 }
 
-                break;
-            case ROTATION_BACKLASH_REMOVAL:
-                rotationPower = ROTATION_BACKLASH_REMOVAL_POWER;
-
-                if (!frontRotationLimitSwitch.getState()) {
-                    rotationMotor.setPosition(0);
-                    homingState = HomingState.COMPLETE;
-                }
                 break;
             case COMPLETE:
                 state = State.MANUAL;
@@ -303,7 +292,7 @@ public final class Arm {
     }
 
     @NonNull private double[] positionControl() {
-        double extensionPower = extensionController.calculate(position[0], targetPosition[1]);
+        double extensionPower = extensionController.calculate(position[0], targetPosition[0]);
         double rotationPower = rotationController.calculate(position[1], targetPosition[1]);
 
         if (Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 0.5) {
@@ -438,11 +427,30 @@ public final class Arm {
     }
 
     /**
+     * Displays debug information about the rotation motor
+     * @param telemetry The telemetry to display the information on
+     */
+    public void rotationDebug(@NonNull Telemetry telemetry) {
+        rotationMotor.debug(telemetry, "Rotation");
+        rotationMotor.debugCache(telemetry);
+    }
+
+
+    /**
+     * Displays debug information about the extension motors
+     * @param telemetry The telemetry to display the information on
+     */
+    public void extensionDebug(@NonNull Telemetry telemetry) {
+        extensionMotorGroup.debug(telemetry, "Extension");
+    }
+
+    /**
      * Displays debug information about the current state of the arm
      * @param telemetry The telemetry to display information on
      */
     public void globalDebug(@NonNull Telemetry telemetry) {
         telemetry.addLine("----- Debug Global -----");
+        telemetry.addData("OpMode Flavour", callingOpModeFlavour);
         telemetry.addData("Arm State ", state);
         telemetry.addData("Homing State ", homingState);
         telemetry.addData("Front Rotation Limit Switch", frontRotationLimitSwitch.getState());
@@ -562,7 +570,6 @@ public final class Arm {
         START,
         EXTENSION,
         ROTATION,
-        ROTATION_BACKLASH_REMOVAL,
         COMPLETE
     }
 }

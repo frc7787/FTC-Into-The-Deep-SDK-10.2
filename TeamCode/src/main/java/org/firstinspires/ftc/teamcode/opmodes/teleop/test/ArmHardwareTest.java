@@ -21,7 +21,10 @@ public final class ArmHardwareTest extends OpMode {
     // ---------------------------------------------------------------------------------------------
     // Hardware
 
-    private Motor rotationMotor;
+    private Motor rotationMotor,
+                  leaderExtensionMotor,
+                  followerExtensionMotorOne,
+                  followerExtensionMotorTwo;
     private MotorGroup extensionMotorGroup;
     private Intake intake;
     private DigitalChannel extensionLimitSwitch,
@@ -33,6 +36,10 @@ public final class ArmHardwareTest extends OpMode {
 
     @Override public void init() {
         rotationMotor = new Motor(hardwareMap.get(DcMotorImplEx.class, ROTATION_MOTOR_NAME));
+        leaderExtensionMotor = new Motor(hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME));
+        followerExtensionMotorOne = new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME));
+        followerExtensionMotorTwo = new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME));
+
         extensionMotorGroup = new MotorGroup(
                 new Motor(hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME)),
                 new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME)),

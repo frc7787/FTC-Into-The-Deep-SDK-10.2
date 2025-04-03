@@ -1,14 +1,21 @@
 
 package org.firstinspires.ftc.teamcode.opmodes.teleop.tuning;
 
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.FOLLOWER_EXTENSION_MOTOR_ONE_NAME;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.FOLLOWER_EXTENSION_MOTOR_TWO_NAME;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.LEADER_EXTENSION_MOTOR_NAME;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.hardware.Motor;
+import org.firstinspires.ftc.teamcode.hardware.MotorGroup;
 import org.firstinspires.ftc.teamcode.hardware.PIDController;
 
 @TeleOp(group = "Test")
@@ -17,10 +24,10 @@ public final class ExtensionPIDTuning extends OpMode {
     // ---------------------------------------------------------------------------------------------
     // Configuration values (To be edited by dashboard)
 
-    public static volatile double KP = 0.0;
+    public static volatile double KP = 0.0034;
     public static volatile double KI = 0.0;
-    public static volatile double KD = 0.0;
-    public static volatile int TOLERANCE = 0;
+    public static volatile double KD = 0.000085;
+    public static volatile int TOLERANCE = 30;
     public static volatile int TARGET = 0;
 
     // ---------------------------------------------------------------------------------------------
@@ -38,10 +45,19 @@ public final class ExtensionPIDTuning extends OpMode {
     // ---------------------------------------------------------------------------------------------
     // Hardware
 
-    private DcMotor leaderExtensionMotor, followerExtensionMotor;
+    private MotorGroup extensionMotorGroup;
     private Gamepad currentGamepad, previousGamepad;
 
     // ---------------------------------------------------------------------------------------------
+
+    private final String MANUAL_STATE_MESSAGE =
+            "Extend using left stick y and rotate using right stick y\n"
+            + "Press circle to reset the position\n"
+            + "Press square to enter position mode";
+
+    private final String PID_STATE_MESSAGE =
+            "Press triangle to enable/disable\n"
+            + "Extend using left stick y and rotate using right stick y";
 
     private FtcDashboard dashboard;
     private PIDController extensionController;
@@ -50,13 +66,14 @@ public final class ExtensionPIDTuning extends OpMode {
         extensionController = new PIDController(KP, KI, KD);
         extensionController.setTolerance(TOLERANCE);
 
-        leaderExtensionMotor = hardwareMap.get(DcMotor.class, "leaderExtensionMotor");
-        leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leaderExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leaderExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        followerExtensionMotor = hardwareMap.get(DcMotor.class, "followerExtensionMotor");
-        followerExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        followerExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        extensionMotorGroup = new MotorGroup(
+                new Motor(hardwareMap.get(DcMotor.class, LEADER_EXTENSION_MOTOR_NAME)),
+                new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_ONE_NAME)),
+                new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME))
+        );
+        extensionMotorGroup.reset();
+        extensionMotorGroup.reverseEncoder();
+        extensionMotorGroup.setDirection(DcMotorSimple.Direction.REVERSE);
 
         previousGamepad = new Gamepad();
         currentGamepad = new Gamepad();
@@ -74,7 +91,7 @@ public final class ExtensionPIDTuning extends OpMode {
 
         double leftStickY = -gamepad1.left_stick_y;
 
-        int position = leaderExtensionMotor.getCurrentPosition();
+        int position = extensionMotorGroup.position();
         double power = 0.0;
 
         TelemetryPacket packet = new TelemetryPacket();
@@ -82,8 +99,7 @@ public final class ExtensionPIDTuning extends OpMode {
 
         switch (state) {
             case PID:
-                telemetry.addLine("Control the extension manually with left stick y");
-                telemetry.addLine("Press triangle to toggle enabled/disabled");
+                telemetry.addLine(PID_STATE_MESSAGE);
 
                 if (Math.abs(leftStickY) > 0.05) state = State.MANUAL;
 
@@ -102,25 +118,20 @@ public final class ExtensionPIDTuning extends OpMode {
 
                 break;
             case MANUAL:
-                telemetry.addLine("Control extension with left stick y");
-                telemetry.addLine("Press circle to reset position");
-                telemetry.addLine("Press square to move back to position");
-
+                telemetry.addLine(MANUAL_STATE_MESSAGE);
                 power = -leftStickY;
 
-                if (currentGamepad.circle) {
-                    leaderExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    leaderExtensionMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                }
+                if (currentGamepad.circle) extensionMotorGroup.reset();
 
                 if (currentGamepad.square) state = State.PID;
 
                 break;
         }
 
-        leaderExtensionMotor.setPower(power);
-        followerExtensionMotor.setPower(power);
 
+        packet.put("Position", position);
+
+        extensionMotorGroup.setPower(power);
         packet.put("Power", power);
         dashboard.sendTelemetryPacket(packet);
     }
