@@ -162,8 +162,9 @@ public final class Motor {
      * @return The position of the motor, including the offset from {@link Motor#setPosition(int)}
      */
     public int position() {
-        int position = internalMotor.getCurrentPosition() + positionOffset;
+        int position = internalMotor.getCurrentPosition();
         if (encoderReversed) position = -position;
+        position += positionOffset;
         return position;
     }
 

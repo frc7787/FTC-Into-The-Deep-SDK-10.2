@@ -15,10 +15,10 @@ public class ArmTest extends OpMode {
     }
 
     @Override public void loop() {
-        if (gamepad2.cross) {
-            arm.setTargetPositionPolar(10.0, 45.0);
-        } else if (gamepad2.circle) {
-            arm.setTargetPositionPolar(10.0, 70.0);
+        if (gamepad1.cross || gamepad2.cross) {
+            arm.setTargetPositionPolar(25.0, 45.0);
+        } else if (gamepad1.circle || gamepad2.circle) {
+            arm.setTargetPositionPolar(35.0, 70.0);
         }
 
         arm.update();

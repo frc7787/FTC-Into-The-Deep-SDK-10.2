@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.hardware.subsystems;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -54,7 +53,6 @@ import org.firstinspires.ftc.teamcode.hardware.PIDController;
  *     </li>
  * </ul>
  */
-@Config
 public final class Arm {
     // ---------------------------------------------------------------------------------------------
     // Properties
@@ -71,42 +69,43 @@ public final class Arm {
 
     // Homing
 
-    public static volatile double EXTENSION_HOMING_POWER = -1.0;
-    public static volatile double ROTATION_HOMING_POWER = -0.8;
-    public static volatile double ROTATION_BACKLASH_REMOVAL_POWER = 0.5;
+    public static final double EXTENSION_HOMING_POWER = -1.0;
+    public static final double ROTATION_HOMING_POWER = -1.0;
+    public static final double ROTATION_BACKLASH_REMOVAL_POWER = 0.2;
 
     // Extension
 
-    public static volatile double EXTENSION_KP = 0.0032;
-    public static volatile double EXTENSION_KI = 0.0;
-    public static volatile double EXTENSION_KD = 0.000085;
-    public static volatile double EXTENSION_TICKS_PER_INCH = 504.3;
-    public static volatile double MIN_EXT_INCHES = 15.5;
-    public static volatile double MAX_EXT_INCHES = 45.0;
-    public static volatile double EXTENSION_TOLERANCE_TICKS = 40;
+    public static final double EXTENSION_KP = 0.0032;
+    public static final double EXTENSION_KI = 0.0;
+    public static final double EXTENSION_KD = 0.0000855;
+    public static final double EXTENSION_TICKS_PER_INCH = 491.0;
+    public static final double MINIMUM_EXTENSION_INCHES = 15.0;
+    public static final double MAXIMUM_EXTENSION_INCHES = 45.0;
+    public static final double EXTENSION_STARTING_INCHES = 17.5;
+    public static final double EXTENSION_TOLERANCE_TICKS = 50.0;
 
-    @NonNull public static volatile Direction EXTENSION_MOTOR_DIRECTION = Direction.REVERSE;
+    @NonNull public static final Direction EXTENSION_MOTOR_DIRECTION = Direction.REVERSE;
 
     // Rotation
 
-    public static volatile double ROTATION_KP = 0.0037;
+    public static final double ROTATION_KP = 0.0037;
     public static final double ROTATION_KI = 0.0;
-    public static volatile double ROTATION_KD = 0.00035;
-    public static volatile double ROTATION_TOLERANCE_TICKS = 20.0;
-    public static volatile double MIN_ROT_DEG = -9.0;
-    public static volatile double MAX_ROT_DEG = 95.0;
-    public static volatile double ROTATION_STARTING_ANGLE = -15.0;
-    public static volatile double ROTATION_TICKS_PER_DEGREE = 33.622;
+    public static final double ROTATION_KD = 0.00035;
+    public static final double ROTATION_TOLERANCE_TICKS = 8;
+    public static final double MINIMUM_ROTATION_DEGREES = -14.0;
+    public static final double MAXIMUM_ROTATION_DEGREES = 95.0;
+    public static final double ROTATION_STARTING_ANGLE = -12.0;
+    public static final double ROTATION_TICKS_PER_DEGREE = 34;
 
-    @NonNull public static volatile Direction ROTATION_MOTOR_DIRECTION = Direction.REVERSE;
+    @NonNull public static final Direction ROTATION_MOTOR_DIRECTION = Direction.REVERSE;
 
-    // Arm
+    public static final double ROTATION_HORIZONTAL_OFFSET_INCHES = 10.25;
+    public static final double ROTATION_VERTICAL_OFFSET_INCHES = -5.0;
 
-    public static volatile double ROTATION_HORIZONTAL_OFFSET_INCHES = 18.0;
-    public static volatile double ROTATION_VERTICAL_OFFSET_INCHES = -5.0;
-    public static volatile double MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC = 32.0;
-
-    // ---------------------------------------------------------------------------------------------
+    public static final double MINIMUM_HORIZONTAL_INCHES_ARM_CENTRIC = -2.0;
+    public static final double MAXIMUM_HORIZONTAL_INCHES_ARM_CENTRIC = 40.0;
+    public static final double MINIMUM_VERTICAL_INCHES_ARM_CENTRIC = -5.0;
+    public static final double MAXIMUM_VERTICAL_INCHES_ARM_CENTRIC = 50.0;
 
     // ---------------------------------------------------------------------------------------------
     // Hardware
@@ -117,8 +116,8 @@ public final class Arm {
                                           backRotationLimitSwitch,
                                           extensionLimitSwitch;
 
-    @NonNull PIDController extensionController,
-                           rotationController;
+    @NonNull private final PIDController extensionController,
+                                         rotationController;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -130,9 +129,9 @@ public final class Arm {
     @NonNull private State state;
     @NonNull private HomingState homingState;
 
-    @NonNull private final double[] polarCoordinates,
-                                    polarTargetCoordinates,
-                                    cartesianTargetCoordinates;
+    @NonNull private final double[] polarCoordinates;
+    @NonNull private double[] polarTargetCoordinates;
+    @NonNull private double[] cartesianTargetCoordinates;
 
      // Because of the way we use cartesianCoordinates it is easier to reassign it.
     @NonNull private double[] cartesianCoordinates;
@@ -172,18 +171,22 @@ public final class Arm {
         extensionInputFresh = false;
         rotationInputFresh = false;
 
-        polarCoordinates = new double[]{rotationDegreesToTicks(ROTATION_STARTING_ANGLE), 0.0};
-        polarTargetCoordinates = new double[]{ROTATION_STARTING_ANGLE, 0.0};
+        polarCoordinates = new double[]{0.0, 0.0};
+        polarTargetCoordinates = new double[]{0.0, 0.0};
         cartesianCoordinates = new double[]{0.0, 0.0};
         cartesianTargetCoordinates = new double[]{0.0, 0.0};
         position = new int[]{0, 0};
-        targetPosition = new int[]{0, 0};
+        targetPosition = new int[]{0,0};
 
         manualExtensionInput = 0.0;
         manualRotationInput = 0.0;
 
         extensionController = new PIDController(EXTENSION_KP, EXTENSION_KD, EXTENSION_KI);
         rotationController = new PIDController(ROTATION_KP, ROTATION_KI, ROTATION_KD);
+
+        if (callingOpModeFlavour == OpModeMeta.Flavor.SYSTEM) {
+            throw new IllegalArgumentException("Cannot call arm constructor from system OpMode");
+        }
 
         this.callingOpModeFlavour = callingOpModeFlavour;
 
@@ -206,6 +209,9 @@ public final class Arm {
         this.polarCoordinates[1] = rotationTicksToDegrees(position[1]);
 
         cartesianCoordinates = polarToCartesian(polarCoordinates[0], polarCoordinates[1]);
+
+        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 0.2
+                && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 0.2;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -213,7 +219,6 @@ public final class Arm {
 
     /** Updates the state of the arm */
     public void update() {
-        updatePositionInformation();
 
         double[] powers = new double[]{0.0, 0.0};
 
@@ -231,12 +236,10 @@ public final class Arm {
 
         extensionMotorGroup.setPower(powers[0]);
         rotationMotor.setPower(powers[1]);
-
-        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 0.5
-                   && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 0.5;
-
         extensionInputFresh = false;
         rotationInputFresh = false;
+
+        updatePositionInformation();
     }
 
     /**
@@ -252,8 +255,8 @@ public final class Arm {
                 break;
             case EXTENSION:
                 if (extensionLimitSwitch.getState()) {
-                    extensionMotorGroup.reset();
                     homingState = HomingState.ROTATION;
+                    extensionMotorGroup.reset();
                     break;
                 }
 
@@ -263,19 +266,17 @@ public final class Arm {
                 switch (callingOpModeFlavour) {
                     case TELEOP:
                         if (frontRotationLimitSwitch.getState()) {
-                            rotationPower = 0.0;
-                            homingState = HomingState.COMPLETE;
+                            homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
                             break;
                         }
                         rotationPower = ROTATION_HOMING_POWER;
                         break;
                     case AUTONOMOUS:
                         if (backRotationLimitSwitch.getState()) {
-                            rotationMotor.reset();
-                            homingState = HomingState.COMPLETE;
+                            homingState = HomingState.ROTATION_BACKLASH_REMOVAL;
                             break;
                         }
-                        rotationPower = ROTATION_HOMING_POWER;
+                        rotationPower = -ROTATION_HOMING_POWER;
                         break;
                     case SYSTEM:
                         // Not possible, filtered out in constructor
@@ -283,8 +284,35 @@ public final class Arm {
                 }
 
                 break;
+            case ROTATION_BACKLASH_REMOVAL:
+                switch (callingOpModeFlavour) {
+                    case TELEOP:
+                        rotationPower = ROTATION_BACKLASH_REMOVAL_POWER;
+
+                        if (!frontRotationLimitSwitch.getState()) homingState = HomingState.COMPLETE;
+                        break;
+                    case AUTONOMOUS:
+                        rotationPower = -ROTATION_BACKLASH_REMOVAL_POWER;
+
+                        if (!backRotationLimitSwitch.getState()) homingState = HomingState.COMPLETE;
+                        break;
+                    case SYSTEM:
+                        break;
+                }
+
+                break;
             case COMPLETE:
-                state = State.MANUAL;
+                rotationMotor.reset();
+                extensionMotorGroup.reset();
+                rotationMotor.setPosition(rotationDegreesToTicks(ROTATION_STARTING_ANGLE));
+                extensionMotorGroup.setPosition(extensionInchesToTicks(EXTENSION_STARTING_INCHES));
+                polarCoordinates[0] = EXTENSION_STARTING_INCHES;
+                polarCoordinates[1] = ROTATION_STARTING_ANGLE;
+                polarTargetCoordinates[0] = EXTENSION_STARTING_INCHES;
+                polarTargetCoordinates[1] = ROTATION_STARTING_ANGLE;
+                targetPosition[0] = extensionInchesToTicks(EXTENSION_STARTING_INCHES);
+                targetPosition[1] = rotationDegreesToTicks(ROTATION_STARTING_ANGLE);
+                state = State.POSITION;
                 break;
         }
 
@@ -294,15 +322,6 @@ public final class Arm {
     @NonNull private double[] positionControl() {
         double extensionPower = extensionController.calculate(position[0], targetPosition[0]);
         double rotationPower = rotationController.calculate(position[1], targetPosition[1]);
-
-        if (Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 0.5) {
-            extensionPower = 0.0;
-        }
-
-        if (Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 0.5) {
-            rotationPower = 0.0;
-        }
-
         return new double[]{extensionPower, rotationPower};
     }
 
@@ -310,14 +329,12 @@ public final class Arm {
         double extensionPower = manualExtensionInput;
         double rotationPower = manualRotationInput;
 
-        if (cartesianCoordinates[0] >= MAX_HORIZONTAL_EXTENSION_INCHES_ROBOT_CENTRIC + 3.0) {
-            if (extensionPower > 0.0) {
-                extensionPower = 0.0;
-            }
-            if (rotationPower < 0.0) {
-                rotationPower = 0.0;
-                extensionPower = -1.0;
-            }
+        if (polarCoordinates[0] > MAXIMUM_EXTENSION_INCHES || polarCoordinates[0] < MINIMUM_EXTENSION_INCHES) {
+            extensionPower = 0.0;
+        }
+
+        if (polarCoordinates[1] > MAXIMUM_ROTATION_DEGREES || polarCoordinates[1] < MINIMUM_ROTATION_DEGREES) {
+            rotationPower = 0.0;
         }
 
         if (!extensionInputFresh) extensionPower = 0.0;
@@ -354,25 +371,75 @@ public final class Arm {
     }
 
     /**
-     * Sets the target position of the arm using polar coordinates (rotation and extension)
+     * Sets the target position of the arm using polar coordinates (rotation and extension).
+     * If this function is called during the homing sequence it does not set the target position.
      * @param inches The extension target position in inches
      * @param degrees The rotation target position, in degrees
      */
     public void setTargetPositionPolar(double inches, double degrees) {
+        // TODO technically this function doesn't prevent you from going outside of the horizontal
+        //      extension limit. We should fix this at some point but it isn't a huge issue right
+        //      now
         if (state == State.HOMING) return;
-
         state = State.POSITION;
 
-        polarTargetCoordinates[0] = Math.min(inches, MAX_EXT_INCHES);
-        polarTargetCoordinates[1] = Range.clip(degrees, MIN_ROT_DEG, MAX_ROT_DEG);
+        polarTargetCoordinates[0] = Range.clip(
+                inches,
+                MINIMUM_EXTENSION_INCHES,
+                MAXIMUM_EXTENSION_INCHES
+        );
+        polarTargetCoordinates[1] = Range.clip(
+                degrees,
+                MINIMUM_ROTATION_DEGREES,
+                MAXIMUM_ROTATION_DEGREES
+        );
 
-        double[] cartesianTargetCoordinates
+        this.cartesianTargetCoordinates
                 = polarToCartesian(polarCoordinates[0], polarCoordinates[1]);
-        this.cartesianTargetCoordinates[0] = cartesianTargetCoordinates[0];
-        this.cartesianTargetCoordinates[1] = cartesianTargetCoordinates[1];
 
         targetPosition[0] = extensionInchesToTicks(inches);
         targetPosition[1] = rotationDegreesToTicks(degrees);
+    }
+
+    /**
+     * Sets the target position of the arm using cartesian coordinates (x, y). If this function is
+     * called during the homing sequence it does nothing.
+     * @param horizontalInches The horizontal inches to set the arm
+     * @param verticalInches The vertical inches to set the arm
+     */
+    public void setTargetPositionCartesian(double horizontalInches, double verticalInches) {
+        // TODO technically this function doesn't prevent you from going outside of the rotation or
+        //      extension limit. We should fix this at some point but it isn't a huge issue right
+        //      now
+
+        if (state == State.HOMING) return;
+        state = State.POSITION;
+
+        cartesianTargetCoordinates[0] = Range.clip(
+                horizontalInches,
+                MINIMUM_HORIZONTAL_INCHES_ARM_CENTRIC,
+                MAXIMUM_HORIZONTAL_INCHES_ARM_CENTRIC
+        );
+        cartesianTargetCoordinates[1] = Range.clip(
+                verticalInches,
+                MINIMUM_VERTICAL_INCHES_ARM_CENTRIC,
+                MAXIMUM_VERTICAL_INCHES_ARM_CENTRIC
+        );
+
+        polarTargetCoordinates = cartesianToPolar(horizontalInches, verticalInches);
+        polarTargetCoordinates[0] = Range.clip(
+                polarTargetCoordinates[0],
+                MINIMUM_EXTENSION_INCHES,
+                MAXIMUM_EXTENSION_INCHES
+        );
+        polarTargetCoordinates[1] = Range.clip(
+                polarTargetCoordinates[1],
+                MINIMUM_ROTATION_DEGREES,
+                MAXIMUM_ROTATION_DEGREES
+        );
+
+        targetPosition[0] = extensionInchesToTicks(polarTargetCoordinates[0]);
+        targetPosition[1] = extensionInchesToTicks(polarTargetCoordinates[1]);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -408,6 +475,11 @@ public final class Arm {
      * @param telemetry The telemetry to display it on
      */
     public void positionDebug(@NonNull Telemetry telemetry) {
+        if (state == State.HOMING) {
+            telemetry.addLine("Homing - Position information not available");
+            return;
+        }
+
         telemetry.addData("At Position", atPosition);
         telemetry.addLine("----- Extension -----");
         telemetry.addData("Inches", polarCoordinates[0]);
@@ -434,7 +506,6 @@ public final class Arm {
         rotationMotor.debug(telemetry, "Rotation");
         rotationMotor.debugCache(telemetry);
     }
-
 
     /**
      * Displays debug information about the extension motors
@@ -506,13 +577,12 @@ public final class Arm {
     @NonNull static double[] cartesianToPolar(double xInches, double yInches) {
         double extensionInches = Math.sqrt(
                 Math.pow(xInches, 2.0) +
-                        Math.pow(yInches, 2.0) +
-                        Math.pow(1.5, 2)
-        ) - MIN_EXT_INCHES;
+                Math.pow(yInches, 2.0) +
+                Math.pow(1.5, 2)
+        );
 
         double rotationDegrees = Math.toDegrees(
-                Math.atan(yInches / xInches) -
-                        Math.atan(1.5 / (extensionInches + MIN_EXT_INCHES))
+                Math.atan(yInches / xInches) - Math.atan(1.5 / (extensionInches))
         );
 
         return new double[] {extensionInches, rotationDegrees};
@@ -525,7 +595,6 @@ public final class Arm {
      * @return The cartesian coordinates of the arm (X,Y)
      */
     @NonNull static double[] polarToCartesian(double extensionInches, double rotationDegrees) {
-        extensionInches += MIN_EXT_INCHES;
         double thetaRadians = Math.toRadians(rotationDegrees) + Math.atan(1.5 / extensionInches);
 
         return new double[]{
@@ -570,6 +639,7 @@ public final class Arm {
         START,
         EXTENSION,
         ROTATION,
+        ROTATION_BACKLASH_REMOVAL,
         COMPLETE
     }
 }
