@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Intake;
 
+@TeleOp(group = "Test")
 public final class IntakeTest extends OpMode {
     private Intake intake;
 

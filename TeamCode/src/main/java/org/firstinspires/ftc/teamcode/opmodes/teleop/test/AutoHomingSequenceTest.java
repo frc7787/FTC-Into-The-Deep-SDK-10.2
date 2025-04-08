@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
-import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
+import org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm;
 
 @Autonomous(group = "Test")
 public class AutoHomingSequenceTest extends OpMode {

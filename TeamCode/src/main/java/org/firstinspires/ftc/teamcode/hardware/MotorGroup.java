@@ -16,8 +16,8 @@ import java.util.List;
  * interconnected linear slides or a multi motor gearbox.
  * Position information is read from a "leader" motor, the first motor passed into the constructor.
  */
-public final class MotorGroup {
-    private final List<Motor> motors;
+public class MotorGroup {
+    protected final List<Motor> motors;
 
     /**
      * Creates a new group of motors. Each motor will receive the same instructions, however
@@ -37,17 +37,17 @@ public final class MotorGroup {
     }
 
     /** Resets the leader motor */
-    public void reset() { motors.get(0).reset(); }
+    public final void reset() { motors.get(0).reset(); }
 
     /** Reversed the encoder of the leader motor */
-    public void reverseEncoder() { motors.get(0).reverseEncoder(); }
+    public final void reverseEncoder() { motors.get(0).reverseEncoder(); }
 
     /**
      * <p>Sets the threshold for the motor group to consider a power cached.</p>
      * <p>For more information see {@link Motor#setCachedPowerThreshold(double)}.</p>
      * @param cachedPowerThreshold The threshold to set for the motor group.
      */
-    public void setCachedPowerThreshold(double cachedPowerThreshold) {
+    public final void setCachedPowerThreshold(double cachedPowerThreshold) {
         motors.forEach(motor -> motor.setCachedPowerThreshold(cachedPowerThreshold));
     }
 
@@ -56,14 +56,16 @@ public final class MotorGroup {
      * <p></p>See {@link Motor#setPower(double)} for more information.</p>
      * @param power The power to set.
      */
-    public void setPower(double power) { motors.forEach(motor -> motor.setPower(power)); }
+    public final void setPower(double power) {
+        motors.forEach(motor -> motor.setPower(power));
+    }
 
     /**
      * Sets the zero power behaviour of the motors.
      * See {@link Motor#setZeroPowerBehaviour(ZeroPowerBehavior)} for more information.
      * @param zeroPowerBehavior The new zero power behaviour of the motors
      */
-    public void setZeroPowerBehaviour(@NonNull ZeroPowerBehavior zeroPowerBehavior) {
+    public final void setZeroPowerBehaviour(@NonNull ZeroPowerBehavior zeroPowerBehavior) {
         motors.forEach(motor -> motor.setZeroPowerBehaviour(zeroPowerBehavior));
     }
 
@@ -72,7 +74,7 @@ public final class MotorGroup {
      * <p>See {@link Motor#setDirection(Direction)} for more information.</p>
      * @param direction The direction to set
      */
-    public void setDirection(@NonNull Direction direction) {
+    public final void setDirection(@NonNull Direction direction) {
         motors.forEach(motor -> motor.setDirection(direction));
     }
 
@@ -81,30 +83,33 @@ public final class MotorGroup {
      * <p>See {@link Motor#setPosition(int)} for more information.</p>
      * @param position The position to set.
      */
-    public void setPosition(int position) { motors.get(0).setPosition(position); }
+    public final void setPosition(int position) {
+        motors.get(0).setPosition(position);
+        motors.get(1).setPosition(position);
+    }
 
     /** @return The power of the motor group. */
-    public double power() { return motors.get(0).power(); }
+    public final double power() { return motors.get(0).power(); }
 
     /** @return The zero power behaviour of the motor group. */
-    @NonNull public ZeroPowerBehavior zeroPowerBehavior() {
+    @NonNull public final ZeroPowerBehavior zeroPowerBehavior() {
        return motors.get(0).zeroPowerBehaviour();
     }
 
     /** @return The direction of the motor group. */
-    @NonNull public Direction direction() { return motors.get(0).direction(); }
+    @NonNull public final Direction direction() { return motors.get(0).direction(); }
 
     /** @return The position of the motor group */
-    public int position() { return motors.get(0).position(); }
+    public final int position() { return motors.get(0).position(); }
 
     /** @return The position of the motor group before any offsets */
-    public int rawPosition() { return motors.get(0).rawPosition(); }
+    public final int rawPosition() { return motors.get(0).rawPosition(); }
 
     /**
      * @param angularVelocityUnit The unit to return the velocity in
      * @return The velocity of the leader motor in ticks/second
      */
-    public double velocity(Motor.AngularVelocityUnit angularVelocityUnit) {
+    public final double velocity(Motor.AngularVelocityUnit angularVelocityUnit) {
         return motors.get(0).velocity(angularVelocityUnit);
     }
 
@@ -112,7 +117,7 @@ public final class MotorGroup {
      * @param currentUnit The unit to return the current in
      * @return The sum of the current of every motor in the group
      */
-    public double currentSum(@NonNull CurrentUnit currentUnit) {
+    public final double currentSum(@NonNull CurrentUnit currentUnit) {
         double currentSum = 0.0;
 
         // Can't use a lambda because we are modifying the currentSum variable
@@ -127,7 +132,7 @@ public final class MotorGroup {
      * @param currentUnit The unit to return the current in
      * @return The current of each motor in the specified {@link CurrentUnit}
      */
-    public double[] currents(@NonNull CurrentUnit currentUnit) {
+    public final double[] currents(@NonNull CurrentUnit currentUnit) {
         ArrayList<Double> currents = new ArrayList<>();
 
         // Can't use a lambda because we are modifying the currents variable
@@ -147,10 +152,31 @@ public final class MotorGroup {
     public void debug(@NonNull Telemetry telemetry, @NonNull String name) {
         int count = 0;
 
-        telemetry.addLine("------- " + name + " -------");
+        if (!name.isEmpty()) telemetry.addLine("------- " + name + " -------");
+
         telemetry.addData("Current Sum (AMPS)", currentSum(CurrentUnit.AMPS));
 
         for (Motor motor: motors) {
+            if (count == 0) {
+                motor.debug(telemetry, "Leader");
+            } else {
+                motor.debug(telemetry, "Follower " + count);
+            }
+            count ++;
+        }
+    }
+
+    /**
+     * Displays debug information about the cache of each motor
+     * @param telemetry The telemetry to display the information on
+     * @param name The name to give the motor group in telemetry
+     */
+    public void debugCache(@NonNull Telemetry telemetry, @NonNull String name) {
+        int count = 0;
+
+        telemetry.addLine("------- " + name + " -------");
+
+        for (Motor motor : motors) {
             if (count == 0) {
                 motor.debug(telemetry, "Leader");
             } else {

@@ -1,9 +1,9 @@
 
 package org.firstinspires.ftc.teamcode.opmodes.teleop.tuning;
 
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.FOLLOWER_EXTENSION_MOTOR_ONE_NAME;
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.FOLLOWER_EXTENSION_MOTOR_TWO_NAME;
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.LEADER_EXTENSION_MOTOR_NAME;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm.FOLLOWER_EXTENSION_MOTOR_ONE_NAME;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm.FOLLOWER_EXTENSION_MOTOR_TWO_NAME;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm.LEADER_EXTENSION_MOTOR_NAME;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -24,10 +24,10 @@ public final class ExtensionPIDTuning extends OpMode {
     // ---------------------------------------------------------------------------------------------
     // Configuration values (To be edited by dashboard)
 
-    public static volatile double KP = 0.0034;
+    public static volatile double KP = 0.000;
     public static volatile double KI = 0.0;
-    public static volatile double KD = 0.000085;
-    public static volatile int TOLERANCE = 30;
+    public static volatile double KD = 0.00000;
+    public static volatile int TOLERANCE = 0;
     public static volatile int TARGET = 0;
 
     // ---------------------------------------------------------------------------------------------
@@ -72,7 +72,6 @@ public final class ExtensionPIDTuning extends OpMode {
                 new Motor(hardwareMap.get(DcMotor.class, FOLLOWER_EXTENSION_MOTOR_TWO_NAME))
         );
         extensionMotorGroup.reset();
-        extensionMotorGroup.reverseEncoder();
         extensionMotorGroup.setDirection(DcMotorSimple.Direction.REVERSE);
 
         previousGamepad = new Gamepad();

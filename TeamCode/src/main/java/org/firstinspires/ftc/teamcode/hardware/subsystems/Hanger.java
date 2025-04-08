@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.Servo.Direction;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm;
 
 import java.util.List;
 
@@ -37,14 +38,14 @@ public final class Hanger {
     // ---------------------------------------------------------------------------------------------
     // Properties
 
-    @NonNull private final String FRONT_STILT_SERVO_NAME = "frontStiltServo";
-    @NonNull private final String BACK_LEFT_STILT_SERVO_NAME = "backLeftStiltServo";
-    @NonNull private final String BACK_RIGHT_STILT_SERVO_NAME = "backRightStiltServo";
+    @NonNull public static final String FRONT_STILT_SERVO_NAME = "frontStiltServo";
+    @NonNull public static final String BACK_LEFT_STILT_SERVO_NAME = "backLeftStiltServo";
+    @NonNull public static final String BACK_RIGHT_STILT_SERVO_NAME = "backRightStiltServo";
 
-    private final double IDLE_POSITION = 0.0;
-    private final double PRIMED_POSITION = 0.0;
-    private final double RELEASE_POSITION = 0.0;
-    @NonNull private final Direction HANG_SERVO_DIRECTION = Direction.FORWARD;
+    public static final double IDLE_POSITION = 0.0;
+    public static final double PRIMED_POSITION = 0.0;
+    public static final double RELEASE_POSITION = 0.0;
+    @NonNull public static final Direction HANG_SERVO_DIRECTION = Direction.FORWARD;
 
     // ---------------------------------------------------------------------------------------------
 

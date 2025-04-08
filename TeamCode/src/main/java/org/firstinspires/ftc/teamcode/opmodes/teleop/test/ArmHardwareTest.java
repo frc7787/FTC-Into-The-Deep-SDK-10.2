@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.*;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm.*;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
@@ -70,9 +70,9 @@ public final class ArmHardwareTest extends OpMode {
 
         double drive = -gamepad1.left_stick_y;
         drive *= Math.abs(drive);
-        double strafe = gamepad1.left_stick_x;
+        double strafe = -gamepad1.left_stick_x;
         strafe *= Math.abs(strafe);
-        double turn = gamepad1.right_stick_x;
+        double turn = -gamepad1.right_stick_x;
         turn *= Math.abs(turn);
 
         driveBase.setTeleOpMovementVectors(drive, strafe, turn, true);

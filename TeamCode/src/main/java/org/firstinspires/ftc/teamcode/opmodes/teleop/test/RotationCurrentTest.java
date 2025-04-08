@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.ROTATION_MOTOR_NAME;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm.ROTATION_MOTOR_NAME;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;

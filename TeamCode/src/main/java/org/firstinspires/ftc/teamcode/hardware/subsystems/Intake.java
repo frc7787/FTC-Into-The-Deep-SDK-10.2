@@ -30,16 +30,15 @@ public final class Intake {
 
     @NonNull public static final String INTAKE_SERVO_NAME = "intakeServo";
 
-    public static final double MIN_INTAKE_POSITION = 0.01;
-    public static final double MAX_INTAKE_POSITION = 0.38;
+    public static final double MINIMUM_INTAKE_POSITION = 0.01;
+    public static final double MAXIMUM_INTAKE_POSITION = 0.38;
 
     public static final double INTAKE_OPEN_POSITION = 0.37;
-    public static final double INTAKE_CLOSED_POSITION = 0.03;
-    public static final double INTAKE_NEUTRAL_POSITION = 0.15;
+    public static final double INTAKE_CLOSED_POSITION = 0.05;
+    public static final double INTAKE_NEUTRAL_POSITION = 0.10;
+    public static final double INTAKE_HOCKEY_STICK_POSITION = 0.25;
 
-    @NonNull public static final Direction INTAKE_SERVO_DIRECTION = Direction.FORWARD;
-
-    // ---------------------------------------------------------------------------------------------
+    @NonNull public static final Direction INTAKE_SERVO_DIRECTION = Direction.REVERSE;
 
     // ---------------------------------------------------------------------------------------------
     // Hardware
@@ -47,13 +46,9 @@ public final class Intake {
     @NonNull private final Servo intakeServo;
 
     // ---------------------------------------------------------------------------------------------
-
-    // ---------------------------------------------------------------------------------------------
     // Cache
 
     private double positionCache;
-
-    // ---------------------------------------------------------------------------------------------
 
     // ---------------------------------------------------------------------------------------------
     // State
@@ -65,53 +60,45 @@ public final class Intake {
     public Intake(@NonNull HardwareMap hardwareMap) {
         intakeServo = hardwareMap.get(Servo.class, INTAKE_SERVO_NAME);
         positionCacheThreshold = 0.01;
+        positionCache = INTAKE_NEUTRAL_POSITION;
         initialize();
     }
 
     private void initialize() {
         intakeServo.setDirection(INTAKE_SERVO_DIRECTION);
         intakeServo.setPosition(INTAKE_NEUTRAL_POSITION);
-        positionCache = INTAKE_NEUTRAL_POSITION;
     }
 
     /** Sets the intake to the position defined by {@link Intake#INTAKE_OPEN_POSITION}. */
-    public void open() {
-        if (positionCache == INTAKE_OPEN_POSITION) return;
-        intakeServo.setPosition(INTAKE_OPEN_POSITION);
-        positionCache = INTAKE_OPEN_POSITION;
-    }
+    public void open() { setPosition(INTAKE_CLOSED_POSITION); }
 
     /** Sets the intake to the position defined by {@link Intake#INTAKE_CLOSED_POSITION}. */
-    public void close() {
-        if (positionCache == INTAKE_CLOSED_POSITION) return;
-        intakeServo.setPosition(INTAKE_CLOSED_POSITION);
-        positionCache = INTAKE_CLOSED_POSITION;
-    }
+    public void close() { setPosition(INTAKE_OPEN_POSITION); }
 
     /** Sets the intake to the position defined by {@link Intake#INTAKE_NEUTRAL_POSITION}. */
-    public void neutral() {
-        if (positionCache == INTAKE_NEUTRAL_POSITION) return;
-        intakeServo.setPosition(INTAKE_NEUTRAL_POSITION);
-        positionCache = INTAKE_NEUTRAL_POSITION;
-    }
+    public void neutral() { setPosition(INTAKE_NEUTRAL_POSITION); }
 
     /**
      * Sets the threshold for the position of the intake being considered cached. Any change in
      * position less than or equal to this value will be ignored. Note that this value is clipped to
-     * be within {@link Intake#MIN_INTAKE_POSITION} and {@link Intake#MAX_INTAKE_POSITION}.
+     * be within {@link Intake#MINIMUM_INTAKE_POSITION} and {@link Intake#MAXIMUM_INTAKE_POSITION}.
      * @param positionCacheThreshold The position cache threshold to set
      */
     public void setPositionCacheThreshold(double positionCacheThreshold) {
-        this.positionCacheThreshold = Range.clip(positionCacheThreshold, MIN_INTAKE_POSITION, MAX_INTAKE_POSITION);
+        this.positionCacheThreshold = Range.clip(
+                positionCacheThreshold,
+                MINIMUM_INTAKE_POSITION,
+                MAXIMUM_INTAKE_POSITION
+        );
     }
 
     /**
      * Sets the position of the intake to the input position. This position will be clipped by
-     * {@link Intake#MIN_INTAKE_POSITION} and {@link Intake#MAX_INTAKE_POSITION} respectively
+     * {@link Intake#MINIMUM_INTAKE_POSITION} and {@link Intake#MAXIMUM_INTAKE_POSITION}.
      * @param position The position to set the intake to
      */
     public void setPosition(double position) {
-        position = Range.clip(position, MIN_INTAKE_POSITION, MAX_INTAKE_POSITION);
+        position = Range.clip(position, MINIMUM_INTAKE_POSITION, MAXIMUM_INTAKE_POSITION);
         if (positionCache == position) return;
         intakeServo.setPosition(position);
         positionCache = position;
@@ -125,5 +112,7 @@ public final class Intake {
         telemetry.addLine("----- Intake Debug -----");
         telemetry.addData("Position", intakeServo.getPosition());
         telemetry.addData("Direction", intakeServo.getDirection());
+        telemetry.addData("Position Cache", positionCache);
+        telemetry.addData("Position Cache Threshold", positionCacheThreshold);
     }
 }

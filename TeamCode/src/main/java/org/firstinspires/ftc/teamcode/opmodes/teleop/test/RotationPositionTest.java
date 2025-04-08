@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop.test;
 
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.*;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
