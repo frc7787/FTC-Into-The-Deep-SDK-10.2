@@ -19,11 +19,11 @@ dependencies {
     implementation 'org.firstinspires.ftc:Vision:10.2.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     // Custom
-    implementation('com.pedropathing:beta:1.0.9-beta2') {
-        exclude group: "com.acmerobotics.dashboard"
+    implementation 'com.pedropathing:beta:1.0.9-beta2'
+
+    implementation('com.acmerobotics.dashboard:dashboard:0.4.16') {
+        exclude group: 'org.firstinspires.ftc'
     }
-    // Dairy
-    implementation 'com.acmerobotics.slothboard:dashboard:0.1.1+0.4.16'
-    implementation "dev.frozenmilk.dairy:Core:2.1.0"
+
 }
 

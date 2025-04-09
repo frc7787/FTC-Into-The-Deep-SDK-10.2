@@ -76,7 +76,7 @@ public final class Arm {
 
     // Extension
 
-    public static final double EXTENSION_KP = 0.008;
+    public static final double EXTENSION_KP = 0.0074;
     public static final double EXTENSION_KI = 0.0;
     public static final double EXTENSION_KD = 0.00015;
     public static final double EXTENSION_TICKS_PER_INCH = 57.45;
@@ -221,8 +221,8 @@ public final class Arm {
 
         cartesianCoordinates = polarToCartesian(polarCoordinates[0], polarCoordinates[1]);
 
-        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 0.2
-                && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 0.2;
+        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 3.0
+                && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 3.0;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -241,6 +241,7 @@ public final class Arm {
                 break;
             case MANUAL:
                 powers = manualControl();
+                powers[1] += 0.06;
                 break;
         }
 
@@ -361,7 +362,6 @@ public final class Arm {
                 extensionPower = EXTENSION_HOMING_POWER;
             case COMPLETE:
                 rotationMotor.reset();
-              //  extensionMotorGroup.reset();
                 rotationMotor.setPosition(rotationDegreesToTicks(ROTATION_STARTING_ANGLE));
                 polarTargetCoordinates[0] = EXTENSION_STARTING_INCHES;
                 polarTargetCoordinates[1] = ROTATION_STARTING_ANGLE;
@@ -556,7 +556,7 @@ public final class Arm {
         telemetry.addData("Front Rotation Limit Switch", frontRotationLimitSwitch.getState());
         telemetry.addData("Back Rotation Limit Switch", backRotationLimitSwitch.getState());
         telemetry.addData("Extension Limit Switch", extensionLimitSwitch.getState());
-        telemetry.addData("Rotation Power", rotationMotor.power());
+        //telemetry.addData("Rotation Power", rotationMotor.power());
         telemetry.addData("Extension Power", extensionMotorGroup.power());
     }
 

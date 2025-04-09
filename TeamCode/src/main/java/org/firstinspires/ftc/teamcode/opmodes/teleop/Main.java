@@ -44,6 +44,8 @@ public final class Main extends OpMode {
     public static volatile double HANG_EXTENSION_INCHES = 0.0;
     public static volatile double HANG_ROTATION_DEGREES = 0.0;
 
+    private boolean subAtInitialPositionOnce;
+
     private Arm arm;
     private Intake intake;
     private Hanger hanger;
@@ -62,6 +64,7 @@ public final class Main extends OpMode {
         teleOpState = TeleOpState.NORMAL;
         currentGamepad1 = new Gamepad();
         previousGamepad1 = new Gamepad();
+        subAtInitialPositionOnce = false;
     }
 
     @Override public void start() { mecanumDrive.resetYaw(); }
@@ -120,12 +123,15 @@ public final class Main extends OpMode {
                 double extensionInput = gamepad1.left_trigger - gamepad1.right_trigger;
                 double rotationInput = -gamepad1.right_stick_y;
 
-                arm.setManualInputs(extensionInput, rotationInput);
+                if (extensionInput != 0.0 || rotationInput != 0.0) {
+                    arm.setManualInputs(extensionInput, rotationInput);
+                }
 
                 break;
         }
 
         telemetry.addData("TeleOpState", teleOpState);
+        arm.globalDebug(telemetry);
         arm.positionDebug(telemetry);
         arm.update();
     }

@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 public class MecanumDrive {
     private final DcMotorImplEx frontLeftDriveMotor,
                                 frontRightDriveMotor,
@@ -46,7 +48,7 @@ public class MecanumDrive {
 
     public void drive(double drive, double strafe, double turn) {
         double thetaRadians = StrictMath.atan2(drive, strafe);
-        //thetaRadians -= imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        thetaRadians -= imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
         double power = StrictMath.hypot(strafe, drive);
 

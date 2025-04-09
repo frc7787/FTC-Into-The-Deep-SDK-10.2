@@ -30,13 +30,14 @@ public final class Intake {
 
     @NonNull public static final String INTAKE_SERVO_NAME = "intakeServo";
 
-    public static final double MINIMUM_INTAKE_POSITION = 0.01;
-    public static final double MAXIMUM_INTAKE_POSITION = 0.38;
+    public static final double MINIMUM_INTAKE_POSITION = 0.00;
+    public static final double MAXIMUM_INTAKE_POSITION = 0.57;
 
-    public static final double INTAKE_OPEN_POSITION = 0.37;
-    public static final double INTAKE_CLOSED_POSITION = 0.05;
-    public static final double INTAKE_NEUTRAL_POSITION = 0.10;
+    public static final double INTAKE_OPEN_POSITION = 0.5;
+    public static final double INTAKE_CLOSED_POSITION = 0.14;
+    public static final double INTAKE_PINCHED_POSITION = 0.08;
     public static final double INTAKE_HOCKEY_STICK_POSITION = 0.25;
+    public static final double INTAKE_NEUTRAL_POSITION = 0.26;
 
     @NonNull public static final Direction INTAKE_SERVO_DIRECTION = Direction.REVERSE;
 

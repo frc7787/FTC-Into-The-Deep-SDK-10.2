@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.hardware;
 import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import static com.qualcomm.robotcore.hardware.DcMotor.*;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.util.Range;
 
@@ -24,8 +23,8 @@ public final class Motor {
     // Cache
 
     private double cachedPower;
-    @NonNull private ZeroPowerBehavior cachedZeroPowerBehaviour;
-    @NonNull private Direction cachedDirection;
+    @NonNull private DcMotor.ZeroPowerBehavior cachedZeroPowerBehaviour;
+    @NonNull private DcMotor.Direction cachedDirection;
 
     // ---------------------------------------------------------------------------------------------
     // State
@@ -43,18 +42,19 @@ public final class Motor {
         positionOffset = 0;
         cachedPowerThreshold = 0.02;
         encoderReversed = false;
-        initialize();
+        //initialize();
         initializeCache();
     }
 
     private void initialize() {
         internalMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         internalMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        internalMotor.setPower(0.0);
         internalMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     private void initializeCache() {
-        cachedPower = internalMotor.getPower();
+        cachedPower = 0.0;
         cachedZeroPowerBehaviour = internalMotor.getZeroPowerBehavior();
         cachedDirection = internalMotor.getDirection();
     }
@@ -62,8 +62,8 @@ public final class Motor {
     /** Resets the motors position. */
     public void reset() {
         internalMotor.setPower(0.0);
-        internalMotor.setMode(RunMode.STOP_AND_RESET_ENCODER);
-        internalMotor.setMode(RunMode.RUN_WITHOUT_ENCODER);
+        internalMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        internalMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         cachedPower = 0.0;
         positionOffset = 0;
     }
@@ -105,8 +105,8 @@ public final class Motor {
      * <p>This function will not set the zero power behaviour to UNKNOWN.</p>
      * @param zeroPowerBehavior The zero power behavior to set the motor
      */
-    public void setZeroPowerBehaviour(@NonNull ZeroPowerBehavior zeroPowerBehavior) {
-        if (zeroPowerBehavior == ZeroPowerBehavior.UNKNOWN || zeroPowerBehavior == cachedZeroPowerBehaviour) {
+    public void setZeroPowerBehaviour(@NonNull DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
+        if (zeroPowerBehavior == DcMotor.ZeroPowerBehavior.UNKNOWN || zeroPowerBehavior == cachedZeroPowerBehaviour) {
             return;
         }
         internalMotor.setZeroPowerBehavior(zeroPowerBehavior);
@@ -117,7 +117,7 @@ public final class Motor {
      * Sets the direction of the motor.
      * @param direction The direction to set the motor
      */
-    public void setDirection(@NonNull Direction direction) {
+    public void setDirection(@NonNull DcMotor.Direction direction) {
         if (direction == cachedDirection) return;
         internalMotor.setDirection(direction);
         cachedDirection = direction;
@@ -133,10 +133,10 @@ public final class Motor {
     public double power() { return cachedPower; }
 
     /** @return The current zero power behaviour of the motor */
-    public ZeroPowerBehavior zeroPowerBehaviour() { return cachedZeroPowerBehaviour; }
+    public DcMotor.ZeroPowerBehavior zeroPowerBehaviour() { return cachedZeroPowerBehaviour; }
 
     /** @return The direction of the motor */
-    public Direction direction() { return cachedDirection; }
+    public DcMotor.Direction direction() { return cachedDirection; }
 
     /** @return The position of the motor. */
     public int position() {
