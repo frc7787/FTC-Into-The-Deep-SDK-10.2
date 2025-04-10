@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm;
 
 @TeleOp(group = "Test")
-public class ArmTest extends OpMode {
+public final class ArmTest extends OpMode {
     private Arm arm;
 
     @Override public void init() {

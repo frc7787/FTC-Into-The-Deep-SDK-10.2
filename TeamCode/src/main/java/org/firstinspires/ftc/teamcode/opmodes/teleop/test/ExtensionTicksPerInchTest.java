@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.hardware.Motor;
 
 @TeleOp(group = "Test")
-public class ExtensionTicksPerInchTest extends OpMode {
+public final class ExtensionTicksPerInchTest extends OpMode {
     private Motor leaderExtensionMotor;
 
     @Override public void init() {

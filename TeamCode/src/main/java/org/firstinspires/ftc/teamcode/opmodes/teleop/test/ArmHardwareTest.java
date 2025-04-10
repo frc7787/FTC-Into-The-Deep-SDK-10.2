@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.hardware.MotorGroup;
 
 @TeleOp(group = "Test")
-public class ArmHardwareTest extends OpMode {
+public final class ArmHardwareTest extends OpMode {
 
     private Motor rotationMotor;
     private MotorGroup extensionMotorGroup;

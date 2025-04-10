@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.arm.Arm;
 
 @Autonomous(group = "Test")
-public class AutoHomingSequenceTest extends OpMode {
+public final class AutoHomingSequenceTest extends OpMode {
     private Arm arm;
 
     @Override public void init() {

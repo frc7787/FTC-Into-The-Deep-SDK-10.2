@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.pedropathing.constants.LocalizerConstants;
 import org.firstinspires.ftc.teamcode.pedropathing.constants.PathFollowingConstants;
 
 @TeleOp(group = "Test")
-public class DriveBaseTest extends OpMode {
+public final class DriveBaseTest extends OpMode {
     private Follower driveBase;
 
     @Override public void init() {

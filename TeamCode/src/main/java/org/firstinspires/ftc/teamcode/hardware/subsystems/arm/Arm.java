@@ -249,7 +249,7 @@ public final class Arm {
             powers[0] = 0.0;
         }
 
-        if (extensionLimitSwitch.getState() && polarCoordinates[1] > 86.0) {
+        if (extensionLimitSwitch.getState() && polarCoordinates[1] > 86.0 & powers[0] <= 0.0) {
             powers[0] = -0.1;
         }
 
@@ -377,12 +377,22 @@ public final class Arm {
     @NonNull private double[] positionControl() {
         double extensionPower = extensionController.calculate(position[0], targetPosition[0]);
         double rotationPower = rotationController.calculate(position[1], targetPosition[1]);
+
         return new double[]{extensionPower, rotationPower};
     }
 
     @NonNull private double[] manualControl() {
         if (!extensionInputFresh) manualExtensionInput = 0.0;
         if (!rotationInputFresh) manualRotationInput = 0.0;
+
+        if (cartesianCoordinates[0] > 38.0 && manualExtensionInput > 0.0) {
+            manualExtensionInput = 0.0;
+        }
+
+        if (cartesianCoordinates[0] > 38.0 && manualRotationInput < 0.0) {
+            manualExtensionInput = -1.0;
+        }
+
         return new double[]{manualExtensionInput, manualRotationInput};
     }
 

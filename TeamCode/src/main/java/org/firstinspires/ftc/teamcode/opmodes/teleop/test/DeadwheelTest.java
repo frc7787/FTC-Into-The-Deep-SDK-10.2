@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import java.util.List;
 
 @TeleOp(group = "Test")
-public class DeadwheelTest extends OpMode {
+public final class DeadwheelTest extends OpMode {
     private List<DcMotor> motors;
 
     @Override public void init() {

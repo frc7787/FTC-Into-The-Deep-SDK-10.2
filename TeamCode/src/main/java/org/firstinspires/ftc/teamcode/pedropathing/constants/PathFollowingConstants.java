@@ -18,13 +18,13 @@ public final class PathFollowingConstants {
         FollowerConstants.rightFrontMotorDirection = Direction.REVERSE;
         FollowerConstants.rightRearMotorDirection = Direction.REVERSE;
 
-        FollowerConstants.mass = 7.31; // Kg
+        FollowerConstants.mass = 10.1; // Kg
 
-        FollowerConstants.xMovement = 91.4186;
-        FollowerConstants.yMovement = 77.9964;
+        FollowerConstants.xMovement = 85.0;
+        FollowerConstants.yMovement = 71.27;
 
-        FollowerConstants.forwardZeroPowerAcceleration = -27.58;
-        FollowerConstants.lateralZeroPowerAcceleration = -55.41;
+        FollowerConstants.forwardZeroPowerAcceleration = -26.3;
+        FollowerConstants.lateralZeroPowerAcceleration = -59.3;
 
         FollowerConstants.translationalPIDFCoefficients.setCoefficients(0.06,0,0.001,0);
         FollowerConstants.useSecondaryTranslationalPID = false;
