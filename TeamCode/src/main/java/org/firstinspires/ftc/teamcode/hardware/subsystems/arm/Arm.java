@@ -154,6 +154,9 @@ public final class Arm {
     private ElapsedTime passiveClipGripperClearingTimer;
     private boolean passiveClipGripperClearingStateInitialized;
 
+    public double extensionPIDOutputPower,
+                  rotationPIDOutputPower;
+
     // ---------------------------------------------------------------------------------------------
 
     public Arm(@NonNull HardwareMap hardwareMap, @NonNull OpModeMeta.Flavor callingOpModeFlavour) {
@@ -191,6 +194,9 @@ public final class Arm {
         position = new int[]{0, 0};
         targetPosition = new int[]{0,0};
 
+        extensionPIDOutputPower = 0.0;
+        rotationPIDOutputPower = 0.0;
+
         manualExtensionInput = 0.0;
         manualRotationInput = 0.0;
 
@@ -221,8 +227,8 @@ public final class Arm {
 
         cartesianCoordinates = polarToCartesian(polarCoordinates[0], polarCoordinates[1]);
 
-        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 3.0
-                && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 3.0;
+        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 4.0
+                && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 4.0;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -375,10 +381,10 @@ public final class Arm {
     }
 
     @NonNull private double[] positionControl() {
-        double extensionPower = extensionController.calculate(position[0], targetPosition[0]);
-        double rotationPower = rotationController.calculate(position[1], targetPosition[1]);
+        extensionPIDOutputPower = extensionController.calculate(position[0], targetPosition[0]);
+        rotationPIDOutputPower = rotationController.calculate(position[1], targetPosition[1]);
 
-        return new double[]{extensionPower, rotationPower};
+        return new double[]{extensionPIDOutputPower, rotationPIDOutputPower};
     }
 
     @NonNull private double[] manualControl() {
@@ -463,7 +469,10 @@ public final class Arm {
     // Getters
 
     /** @return Whether the arm is within tolerance to it's target position */
-    public boolean atPosition() { return atPosition; }
+    public boolean atPosition() {
+        updatePositionInformation();
+        return atPosition;
+    }
 
     /** @return The polar coordinates of the arm (r, theta) */
     @NonNull public double[] polarCoordinates() {
@@ -566,8 +575,12 @@ public final class Arm {
         telemetry.addData("Front Rotation Limit Switch", frontRotationLimitSwitch.getState());
         telemetry.addData("Back Rotation Limit Switch", backRotationLimitSwitch.getState());
         telemetry.addData("Extension Limit Switch", extensionLimitSwitch.getState());
-        //telemetry.addData("Rotation Power", rotationMotor.power());
+        telemetry.addData("Rotation Power", rotationMotor.power());
         telemetry.addData("Extension Power", extensionMotorGroup.power());
+        if (state == State.POSITION) {
+            telemetry.addData("Extension PID Output Power", extensionPIDOutputPower);
+            telemetry.addData("Rotation PID Output Power", rotationPIDOutputPower);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
