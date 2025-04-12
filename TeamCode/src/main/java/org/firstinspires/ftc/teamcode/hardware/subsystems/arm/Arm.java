@@ -76,9 +76,9 @@ public final class Arm {
 
     // Extension
 
-    public static final double EXTENSION_KP = 0.0074;
+    public static final double EXTENSION_KP = 0.007;
     public static final double EXTENSION_KI = 0.0;
-    public static final double EXTENSION_KD = 0.00015;
+    public static final double EXTENSION_KD = 0.00022;
     public static final double EXTENSION_TICKS_PER_INCH = 57.45;
     public static final double MINIMUM_EXTENSION_INCHES = 15.0;
     public static final double MAXIMUM_EXTENSION_INCHES = 65.0;
@@ -227,8 +227,8 @@ public final class Arm {
 
         cartesianCoordinates = polarToCartesian(polarCoordinates[0], polarCoordinates[1]);
 
-        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 4.0
-                && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 4.0;
+        atPosition = Math.abs(polarCoordinates[0] - polarTargetCoordinates[0]) < 2.0
+                && Math.abs(polarCoordinates[1] - polarTargetCoordinates[1]) < 2.0;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -244,6 +244,22 @@ public final class Arm {
                 break;
             case POSITION:
                 powers = positionControl();
+
+                if (polarCoordinates[0] > MAXIMUM_EXTENSION_INCHES && powers[0] > 0.0) {
+                    powers[0] = 0.0;
+                }
+
+                if (extensionLimitSwitch.getState() && polarCoordinates[1] > 86.0 & powers[0] <= 0.0) {
+                    powers[0] = -0.1;
+                }
+
+                if (frontRotationLimitSwitch.getState() && powers[1] < 0.0) {
+                    powers[1] = 0.0;
+                }
+
+                if (backRotationLimitSwitch.getState() && powers[1] > 0.0) {
+                    powers[1] = 0.0;
+                }
                 break;
             case MANUAL:
                 powers = manualControl();
@@ -251,27 +267,11 @@ public final class Arm {
                 break;
         }
 
-        if (polarCoordinates[0] > MAXIMUM_EXTENSION_INCHES && powers[0] > 0.0) {
-            powers[0] = 0.0;
-        }
-
-        if (extensionLimitSwitch.getState() && polarCoordinates[1] > 86.0 & powers[0] <= 0.0) {
-            powers[0] = -0.1;
-        }
-
-        if (frontRotationLimitSwitch.getState() && powers[1] < 0.0) {
-            powers[1] = 0.0;
-        }
-
-        if (backRotationLimitSwitch.getState() && powers[1] > 0.0) {
-            powers[1] = 0.0;
-        }
-
-        if (state == State.POSITION) {
-            if (polarTargetCoordinates[0] < 20.0 && targetPosition[0] < position[0] && !extensionLimitSwitch.getState()) {
-                powers[1] = 0.0;
-            }
-        }
+//        if (state == State.POSITION) {
+//            if (polarTargetCoordinates[0] < 20.0 && targetPosition[0] < position[0] && !extensionLimitSwitch.getState()) {
+//                powers[1] = 0.0;
+//            }
+//        }
 
         extensionMotorGroup.setPower(powers[0]);
         rotationMotor.setPower(powers[1]);
@@ -340,21 +340,29 @@ public final class Arm {
 
                 break;
             case ROTATION_BACKLASH_REMOVAL:
-                switch (callingOpModeFlavour) {
-                    case TELEOP:
-                        rotationPower = ROTATION_BACKLASH_REMOVAL_POWER;
+                rotationPower = ROTATION_BACKLASH_REMOVAL_POWER;
 
-                        if (!frontRotationLimitSwitch.getState()) homingState = HomingState.FINAL_EXTENSION;
-                        break;
-                    case AUTONOMOUS:
-                        rotationPower = -ROTATION_BACKLASH_REMOVAL_POWER;
-
-                        if (!backRotationLimitSwitch.getState()) homingState = HomingState.FINAL_EXTENSION;
-                        break;
-                    case SYSTEM:
-                        // Not possible, filtered out in constructor
-                        break;
+                if (!frontRotationLimitSwitch.getState()) {
+                    rotationPower = 0.0;
+                    homingState = HomingState.FINAL_EXTENSION;
+                    break;
                 }
+
+//                switch (callingOpModeFlavour) {
+//                    case TELEOP:
+//                        rotationPower = ROTATION_BACKLASH_REMOVAL_POWER;
+//
+//                        if (!frontRotationLimitSwitch.getState()) homingState = HomingState.FINAL_EXTENSION;
+//                        break;
+//                    case AUTONOMOUS:
+//                        rotationPower = -ROTATION_BACKLASH_REMOVAL_POWER;
+//
+//                        if (!backRotationLimitSwitch.getState()) homingState = HomingState.FINAL_EXTENSION;
+//                        break;
+//                    case SYSTEM:
+//                        // Not possible, filtered out in constructor
+//                        break;
+//                }
 
                 break;
             case FINAL_EXTENSION:
@@ -366,6 +374,7 @@ public final class Arm {
                 }
 
                 extensionPower = EXTENSION_HOMING_POWER;
+                break;
             case COMPLETE:
                 rotationMotor.reset();
                 rotationMotor.setPosition(rotationDegreesToTicks(ROTATION_STARTING_ANGLE));
@@ -373,7 +382,7 @@ public final class Arm {
                 polarTargetCoordinates[1] = ROTATION_STARTING_ANGLE;
                 targetPosition[0] = extensionInchesToTicks(EXTENSION_STARTING_INCHES);
                 targetPosition[1] = rotationDegreesToTicks(ROTATION_STARTING_ANGLE);
-                state = State.POSITION;
+                state = State.MANUAL;
                 break;
         }
 
