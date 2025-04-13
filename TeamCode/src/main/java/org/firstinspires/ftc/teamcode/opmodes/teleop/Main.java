@@ -10,8 +10,6 @@ import org.firstinspires.ftc.teamcode.hardware.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.pedropathing.constants.*;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
 
-import dev.frozenmilk.dairy.core.util.OpModeLazyCell;
-
 @TeleOp(group = "$")
 public final class Main extends OpMode {
     private Arm arm;
