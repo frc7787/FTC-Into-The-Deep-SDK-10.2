@@ -36,7 +36,7 @@ public final class Main extends OpMode {
     public static volatile double HOME_EXTENSION_INCHES = 0.0;
     public static volatile double HOME_ROTATION_DEGREES = 0.0;
 
-    public static volatile double WALL_PRIME_EXTENSION_INCHES = 12.0;
+    public static volatile double WALL_PRIME_EXTENSION_INCHES = 15.0;
     public static volatile double WALL_PRIME_ROTATION_DEGREES = 92.0;
 
     public static volatile double WALL_PICKUP_EXTENSION_INCHES = 0.0;
@@ -99,7 +99,7 @@ public final class Main extends OpMode {
                     arm.setTargetPositionPolar(HOME_EXTENSION_INCHES, HOME_ROTATION_DEGREES);
                 } else {
                     double extensionInput = -gamepad2.right_stick_y;
-                    double rotationInput = -gamepad2.left_stick_y;
+                    double rotationInput = gamepad2.left_stick_y;
 
                     if (extensionInput != 0.0 || rotationInput != 0.0) {
                         arm.setManualInputs(extensionInput, rotationInput);

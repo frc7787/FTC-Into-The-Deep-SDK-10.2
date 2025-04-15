@@ -18,7 +18,7 @@ public final class ServoTest extends OpMode {
     private Gamepad previousGamepad1, currentGamepad1, previousGamepad2, currentGamepad2;
 
     @Override public void init() {
-        testServo = hardwareMap.get(ServoImplEx.class, "lockServo");
+        testServo = hardwareMap.get(ServoImplEx.class, "frontStiltServo");
         previousGamepad1 = new Gamepad();
         currentGamepad1 = new Gamepad();
         previousGamepad2 = new Gamepad();

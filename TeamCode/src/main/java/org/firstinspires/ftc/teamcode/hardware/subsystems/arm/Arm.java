@@ -245,21 +245,11 @@ public final class Arm {
             case POSITION:
                 powers = positionControl();
 
-                if (polarCoordinates[0] > MAXIMUM_EXTENSION_INCHES && powers[0] > 0.0) {
-                    powers[0] = 0.0;
-                }
 
                 if (extensionLimitSwitch.getState() && polarCoordinates[1] > 86.0 & powers[0] <= 0.0) {
                     powers[0] = -0.1;
                 }
 
-                if (frontRotationLimitSwitch.getState() && powers[1] < 0.0) {
-                    powers[1] = 0.0;
-                }
-
-                if (backRotationLimitSwitch.getState() && powers[1] > 0.0) {
-                    powers[1] = 0.0;
-                }
                 break;
             case MANUAL:
                 powers = manualControl();
@@ -267,11 +257,17 @@ public final class Arm {
                 break;
         }
 
-//        if (state == State.POSITION) {
-//            if (polarTargetCoordinates[0] < 20.0 && targetPosition[0] < position[0] && !extensionLimitSwitch.getState()) {
-//                powers[1] = 0.0;
-//            }
-//        }
+        if (polarCoordinates[0] > MAXIMUM_EXTENSION_INCHES && powers[0] > 0.0) {
+            powers[0] = 0.0;
+        }
+
+        if (frontRotationLimitSwitch.getState() && powers[1] < 0.0) {
+            powers[1] = 0.0;
+        }
+
+        if (backRotationLimitSwitch.getState() && powers[1] > 0.0) {
+            powers[1] = 0.0;
+        }
 
         extensionMotorGroup.setPower(powers[0]);
         rotationMotor.setPower(powers[1]);
