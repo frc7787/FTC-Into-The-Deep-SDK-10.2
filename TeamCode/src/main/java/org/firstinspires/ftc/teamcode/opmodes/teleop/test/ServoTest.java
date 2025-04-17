@@ -18,7 +18,7 @@ public final class ServoTest extends OpMode {
     private Gamepad previousGamepad1, currentGamepad1, previousGamepad2, currentGamepad2;
 
     @Override public void init() {
-        testServo = hardwareMap.get(ServoImplEx.class, "frontStiltServo");
+        testServo = hardwareMap.get(ServoImplEx.class, "lockServo");
         previousGamepad1 = new Gamepad();
         currentGamepad1 = new Gamepad();
         previousGamepad2 = new Gamepad();
@@ -31,12 +31,18 @@ public final class ServoTest extends OpMode {
     }
 
     private void configureHardware() {
-        testServo.setDirection(REVERSE);
+        testServo.setDirection(FORWARD);
         testServo.setPosition(0.0);
     }
 
     @Override public void init_loop() {
         listenForConfigurationChangesAndDisplayTelemetry();
+        telemetry.update();
+    }
+
+    @Override public void start() {
+        testServo.setDirection(direction);
+        testServo.setPosition(position);
     }
 
     @Override public void loop() {

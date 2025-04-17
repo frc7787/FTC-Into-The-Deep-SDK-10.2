@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.pedropathing.constants.PathFollowingConsta
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "Example Auto Blue", group = "Examples")
+@Autonomous(group = "Examples")
 public class Bar extends OpMode {
 
     private static final double HIGH_BAR_EXTENSION_INCHES = 35.5;
@@ -64,7 +64,8 @@ public class Bar extends OpMode {
 
     private PathChain scorePreload,
                       spikeOne,
-                      spikeOneToWall,
+                      spikeOneToNearWall,
+                      firstPickup,
                       spikeTwo,
                       spikeTwoToWall,
                       wallToBar,
@@ -88,9 +89,17 @@ public class Bar extends OpMode {
                 .setLinearHeadingInterpolation(barPose.getHeading(), spikeOnePose.getHeading())
                 .build();
 
-        spikeOneToWall = follower.pathBuilder()
+        spikeOneToNearWall = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(spikeOnePose), new Point(nearWallPose)))
                 .setLinearHeadingInterpolation(spikeOnePose.getHeading(), nearWallPose.getHeading())
+                .build();
+
+        firstPickup = follower.pathBuilder()
+                .addPath(new BezierCurve(
+                        new Point(nearWallPose),
+                        new Point(wallPose)
+                ))
+                .setLinearHeadingInterpolation(nearWallPose.getHeading(), nearWallPose.getHeading())
                 .build();
 
         spikeTwo = follower.pathBuilder()
@@ -160,42 +169,42 @@ public class Bar extends OpMode {
                 }
                 break;
             case 3:
-                if (!follower.isBusy() && arm.atPosition()) {
-                    follower.followPath(spikeTwo, true);
+                if (arm.atPosition()) {
+                    follower.followPath(spikeOne, true);
                     setPathState(4);
                 }
                 break;
             case 4:
                 if (!follower.isBusy()) {
-                    follower.followPath(spikeTwoToWall, true);
+                    arm.setTargetPositionPolar(15.0, 60.0);
                     setPathState(5);
                 }
                 break;
             case 5:
-                if (!follower.isBusy()) {
-                    follower.followPath(wallToBar,true);
+                if (arm.atPosition()) {
+                    follower.followPath(spikeOneToNearWall, true);
                     setPathState(6);
                 }
                 break;
             case 6:
                 if (!follower.isBusy()) {
-                    follower.followPath(barToWall, true);
+                    follower.followPath(firstPickup);
                     setPathState(7);
                 }
                 break;
             case 7:
                 if (!follower.isBusy()) {
-                    follower.followPath(wallToBarTwo, true);
-                    setPathState(8);
+                    follower.followPath(spikeTwo);
                 }
                 break;
             case 8:
-                if (!follower.isBusy()) {
-                    follower.followPath(park, true);
-                    setPathState(9);
-                }
                 break;
             case 9:
+                if (arm.atPosition()) {
+                    follower.followPath(wallToBar);
+                    setPathState(10);
+                }
+            case 10:
                 if (follower.isRobotStuck()) follower.breakFollowing();
         }
     }
@@ -238,6 +247,8 @@ public class Bar extends OpMode {
         follower = new Follower(hardwareMap, PathFollowingConstants.class, LocalizerConstants.class);
 
         arm = new Arm(hardwareMap, OpModeMeta.Flavor.TELEOP);
+
+        actionTimer = new Timer();
 
         follower.setStartingPose(startPose);
         buildPaths();

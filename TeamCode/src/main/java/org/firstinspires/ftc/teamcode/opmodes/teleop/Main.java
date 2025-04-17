@@ -127,12 +127,23 @@ public final class Main extends OpMode {
                     arm.setManualInputs(extensionInput, rotationInput);
                 }
 
+
                 break;
         }
 
-        telemetry.addData("TeleOpState", teleOpState);
-        arm.globalDebug(telemetry);
-        arm.positionDebug(telemetry);
+        if (gamepad2.dpad_right) {
+            hanger.lock();
+        } else if (gamepad2.dpad_left) {
+            hanger.releaseLock();
+        }
+
+//        if (gamepad1.options) {
+//            hanger.prime();
+//        } else if (gamepad1.share && gamepad2.share) {
+//            arm.setManualInputs(-1.0, 0.0);
+//            hanger.release();
+//        }
+
         arm.update();
     }
 
